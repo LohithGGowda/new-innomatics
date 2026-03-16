@@ -10,10 +10,6 @@ products = [
     {"id": 3, "name": "Pen Set", "price": 49, "category": "Stationery", "in_stock": False},
     {"id": 4, "name": "USB Cable", "price": 650, "category": "Electronics", "in_stock": False},
 
-    {"id": 5, "name": "Laptop Stand", "price": 799, "category": "Electronics", "in_stock": True},
-    {"id": 6, "name": "Mechanical Keyboard", "price": 799, "category": "Electronics", "in_stock": True},
-    {"id": 7, "name": "Webcam", "price": 699, "category": "Electronics", "in_stock": False},
-    {"id": 8, "name": "USB Hub", "price": 799, "category": "Electronics", "in_stock": True}
 ]
 
 feedback = []
