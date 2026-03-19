@@ -190,53 +190,28 @@ def product_summary():
 
 class OrderItem(BaseModel):
     product_id: int = Field(..., gt=0)
-    quantity: int = Field(..., ge=1, le=50)
+    quantity:   int = Field(..., gt=0, le=50)
 
 class BulkOrder(BaseModel):
-    company_name: str = Field(..., min_length=2)
-    contact_email: str = Field(..., min_length=5)
-    items: List[OrderItem]
+    company_name:  str           = Field(..., min_length=2)
+    contact_email: str           = Field(..., min_length=5)
+    items:         List[OrderItem] = Field(..., min_items=1)
 
 @app.post("/orders/bulk")
-def bulk_order(order: BulkOrder):
-
-    confirmed = []
-    failed = []
-    grand_total = 0
-
+def place_bulk_order(order: BulkOrder):
+    confirmed, failed, grand_total = [], [], 0
     for item in order.items:
-
         product = next((p for p in products if p["id"] == item.product_id), None)
-
         if not product:
-            failed.append({
-                "product_id": item.product_id,
-                "reason": "Product not found"
-            })
-            continue
-
-        if not product["in_stock"]:
-            failed.append({
-                "product_id": item.product_id,
-                "reason": f"{product['name']} is out of stock"
-            })
-            continue
-
-        subtotal = product["price"] * item.quantity
-        grand_total += subtotal
-
-        confirmed.append({
-            "product": product["name"],
-            "qty": item.quantity,
-            "subtotal": subtotal
-        })
-
-    return {
-        "company": order.company_name,
-        "confirmed": confirmed,
-        "failed": failed,
-        "grand_total": grand_total
-    }
+            failed.append({"product_id": item.product_id, "reason": "Product not found"})
+        elif not product["in_stock"]:
+            failed.append({"product_id": item.product_id, "reason": f"{product['name']} is out of stock"})
+        else:
+            subtotal = product["price"] * item.quantity
+            grand_total += subtotal
+            confirmed.append({"product": product["name"], "qty": item.quantity, "subtotal": subtotal})
+    return {"company": order.company_name, "confirmed": confirmed,
+            "failed": failed, "grand_total": grand_total}
 
 orders = []
 
