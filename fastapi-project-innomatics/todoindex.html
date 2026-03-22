@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FastAPI — Final Project Assignment</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0e1a; --surface:#111827; --surface2:#1f2937;
+  --border:#2d3748; --text:#e2e8f0; --dim:#64748b;
+  --green:#10b981; --blue:#3b82f6; --yellow:#f59e0b;
+  --red:#ef4444; --purple:#8b5cf6; --cyan:#06b6d4;
+  --gold:#f59e0b;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; padding:40px 24px 80px; }
+.page { max-width:920px; margin:0 auto; }
+
+/* HERO */
+.hero {
+  text-align:center; padding:56px 32px;
+  background:linear-gradient(135deg,#0f172a,#1a1040,#0a1628,#0f172a);
+  border-radius:24px; margin-bottom:40px;
+  border:1px solid #3730a3; position:relative; overflow:hidden;
+}
+.hero::before { content:''; position:absolute; top:-40%; left:-10%; width:500px; height:500px; border-radius:50%; background:radial-gradient(circle,rgba(124,58,237,.06),transparent 70%); }
+.hero::after  { content:''; position:absolute; bottom:-40%; right:-10%; width:400px; height:400px; border-radius:50%; background:radial-gradient(circle,rgba(16,185,129,.05),transparent 70%); }
+.hero-tag { display:inline-flex; align-items:center; gap:8px; padding:6px 18px; border-radius:20px; font-size:12px; font-weight:800; background:rgba(245,158,11,.15); border:1px solid rgba(245,158,11,.4); color:#fcd34d; margin-bottom:20px; letter-spacing:2px; }
+.hero h1 { font-size:clamp(30px,5vw,52px); font-weight:900; line-height:1.1; background:linear-gradient(135deg,#fff 0%,#c4b5fd 40%,#6ee7b7 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:12px; }
+.hero-sub { color:#94a3b8; font-size:16px; max-width:560px; margin:0 auto 28px; line-height:1.7; }
+.hero-pills { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:28px; }
+.hpill { padding:6px 16px; border-radius:20px; font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; border:1px solid; }
+.hp-gold   { background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.4);  color:#fcd34d; }
+.hp-green  { background:rgba(16,185,129,.12);  border-color:rgba(16,185,129,.4);  color:#6ee7b7; }
+.hp-purple { background:rgba(139,92,246,.12);  border-color:rgba(139,92,246,.4);  color:#c4b5fd; }
+.hp-blue   { background:rgba(59,130,246,.12);  border-color:rgba(59,130,246,.4);  color:#93c5fd; }
+.hp-red    { background:rgba(239,68,68,.12);   border-color:rgba(239,68,68,.4);   color:#fca5a5; }
+.day-legend { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; background:rgba(255,255,255,.03); border:1px solid var(--border); border-radius:14px; padding:16px 20px; }
+.dl-item { display:flex; align-items:center; gap:6px; font-size:12px; color:#94a3b8; }
+.dl-dot  { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+/* RULES */
+.rules-box { background:rgba(245,158,11,.06); border:1px solid rgba(245,158,11,.25); border-radius:14px; padding:22px 26px; margin-bottom:36px; display:flex; gap:16px; }
+.rules-icon { font-size:26px; flex-shrink:0; }
+.rules-body h3 { font-size:16px; font-weight:800; color:#fcd34d; margin-bottom:10px; }
+.rules-body ul { list-style:none; display:flex; flex-direction:column; gap:6px; }
+.rules-body li { font-size:13px; color:#94a3b8; display:flex; align-items:flex-start; gap:8px; }
+.rules-body li::before { content:'→'; color:#f59e0b; flex-shrink:0; margin-top:1px; }
+.ic { font-family:'JetBrains Mono',monospace; font-size:11px; background:#0d1117; border:1px solid #2d3748; padding:1px 6px; border-radius:4px; color:#38bdf8; }
+
+/* CONCEPTS */
+.concepts-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-bottom:40px; }
+.concept-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; display:flex; align-items:flex-start; gap:10px; }
+.concept-day { padding:3px 8px; border-radius:6px; font-size:10px; font-weight:800; font-family:'JetBrains Mono',monospace; flex-shrink:0; margin-top:1px; }
+.cd1 { background:rgba(16,185,129,.15); color:#10b981; border:1px solid rgba(16,185,129,.3); }
+.cd2 { background:rgba(59,130,246,.15);  color:#60a5fa; border:1px solid rgba(59,130,246,.3); }
+.cd3 { background:rgba(245,158,11,.15);  color:#fcd34d; border:1px solid rgba(245,158,11,.3); }
+.cd4 { background:rgba(249,115,22,.15);  color:#fdba74; border:1px solid rgba(249,115,22,.3); }
+.cd5 { background:rgba(13,148,136,.15);  color:#5eead4; border:1px solid rgba(13,148,136,.3); }
+.cd6 { background:rgba(99,102,241,.15);  color:#a5b4fc; border:1px solid rgba(99,102,241,.3); }
+.concept-text { font-size:13px; color:#cbd5e1; line-height:1.5; }
+.concept-text strong { color:#fff; display:block; margin-bottom:2px; font-size:12px; }
+
+/* SECTION HEADER */
+.sec-hdr { display:flex; align-items:center; gap:12px; margin:40px 0 20px; padding-bottom:12px; border-bottom:2px solid var(--border); }
+.sec-hdr h2 { font-size:20px; font-weight:900; color:#fff; }
+.sec-hdr .badge { padding:4px 14px; border-radius:20px; font-size:11px; font-weight:700; background:rgba(245,158,11,.12); border:1px solid rgba(245,158,11,.3); color:#fcd34d; }
+
+/* PROJECT CARDS */
+.projects-grid { display:flex; flex-direction:column; gap:20px; }
+.proj-card { background:var(--surface); border:2px solid var(--border); border-radius:20px; overflow:hidden; transition:all .3s; }
+.proj-card:hover { border-color:#4338ca; }
+.proj-card.selected { border-color:var(--gold) !important; box-shadow:0 0 0 3px rgba(245,158,11,.15); }
+.proj-header { padding:20px 24px; display:flex; align-items:center; gap:16px; border-bottom:1px solid var(--border); cursor:pointer; }
+.proj-num { width:52px; height:52px; border-radius:14px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:22px; color:#fff; }
+.pn1  { background:linear-gradient(135deg,#10b981,#06b6d4); }
+.pn2  { background:linear-gradient(135deg,#6366f1,#8b5cf6); }
+.pn3  { background:linear-gradient(135deg,#f59e0b,#ef4444); }
+.pn4  { background:linear-gradient(135deg,#ec4899,#f97316); }
+.pn5  { background:linear-gradient(135deg,#8b5cf6,#06b6d4); }
+.pn6  { background:linear-gradient(135deg,#0d9488,#10b981); }
+.pn7  { background:linear-gradient(135deg,#f97316,#f59e0b); }
+.pn8  { background:linear-gradient(135deg,#3b82f6,#6366f1); }
+.pn9  { background:linear-gradient(135deg,#a855f7,#ec4899); }
+.pn10 { background:linear-gradient(135deg,#ef4444,#f97316); }
+.proj-info { flex:1; }
+.proj-title   { font-size:19px; font-weight:900; color:#fff; margin-bottom:4px; }
+.proj-tagline { font-size:13px; color:#94a3b8; margin-bottom:8px; }
+.proj-tags { display:flex; gap:6px; flex-wrap:wrap; }
+.ptag { padding:2px 10px; border-radius:12px; font-size:11px; font-weight:600; background:rgba(255,255,255,.05); border:1px solid var(--border); color:#94a3b8; }
+.proj-select-btn { padding:9px 22px; border-radius:10px; font-size:13px; font-weight:700; background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.3); color:#fcd34d; cursor:pointer; transition:all .2s; white-space:nowrap; font-family:'Inter',sans-serif; flex-shrink:0; }
+.proj-select-btn:hover { background:rgba(245,158,11,.25); }
+.proj-card.selected .proj-select-btn { background:rgba(245,158,11,.3); border-color:#f59e0b; }
+.proj-card.selected .proj-select-btn::before { content:"✓ "; }
+
+/* COLLAPSIBLE BODY */
+.proj-body { display:none; padding:24px; border-top:1px solid var(--border); }
+.proj-card.open .proj-body { display:block; }
+
+/* DIFFICULTY SECTIONS */
+.diff-section { margin-bottom:28px; }
+.diff-section-hdr { display:flex; align-items:center; gap:10px; margin-bottom:14px; padding:10px 16px; border-radius:10px; }
+.dsh-beginner { background:rgba(16,185,129,.08);  border:1px solid rgba(16,185,129,.2); }
+.dsh-easy     { background:rgba(59,130,246,.08);  border:1px solid rgba(59,130,246,.2); }
+.dsh-medium   { background:rgba(245,158,11,.08);  border:1px solid rgba(245,158,11,.2); }
+.dsh-hard     { background:rgba(239,68,68,.08);   border:1px solid rgba(239,68,68,.2);  }
+.dsh-label { font-size:12px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; }
+.dsh-beginner .dsh-label { color:#10b981; }
+.dsh-easy     .dsh-label { color:#60a5fa; }
+.dsh-medium   .dsh-label { color:#f59e0b; }
+.dsh-hard     .dsh-label { color:#ef4444; }
+.dsh-desc { font-size:12px; color:#64748b; }
+.dsh-count { margin-left:auto; font-size:11px; font-weight:700; padding:2px 10px; border-radius:10px; }
+.dsh-beginner .dsh-count { background:rgba(16,185,129,.15); color:#10b981; }
+.dsh-easy     .dsh-count { background:rgba(59,130,246,.15);  color:#60a5fa; }
+.dsh-medium   .dsh-count { background:rgba(245,158,11,.15);  color:#f59e0b; }
+.dsh-hard     .dsh-count { background:rgba(239,68,68,.15);   color:#ef4444; }
+
+/* QUESTION ITEMS */
+.pq-list { display:flex; flex-direction:column; gap:10px; }
+.pq-item { display:flex; align-items:flex-start; gap:12px; padding:13px 16px; border-radius:12px; background:var(--surface2); border:1px solid var(--border); font-size:13px; line-height:1.6; transition:border-color .2s; }
+.pq-item:hover { border-color:#4338ca; }
+.pq-num { width:28px; height:28px; border-radius:8px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; color:#fff; font-family:'JetBrains Mono',monospace; margin-top:1px; }
+.pq-content { flex:1; }
+.pq-content p { color:var(--text); margin-bottom:6px; }
+.pq-content code { font-family:'JetBrains Mono',monospace; font-size:11px; background:#0d1117; border:1px solid var(--border); padding:1px 6px; border-radius:4px; color:#38bdf8; }
+.day-tags { display:flex; gap:5px; flex-wrap:wrap; margin-top:6px; }
+.dtag { padding:1px 8px; border-radius:6px; font-size:10px; font-weight:700; font-family:'JetBrains Mono',monospace; }
+
+/* SUBMIT */
+.submit-final { background:linear-gradient(135deg,rgba(124,58,237,.06),rgba(16,185,129,.06)); border:2px solid rgba(124,58,237,.3); border-radius:20px; padding:32px; margin-top:40px; }
+.submit-final h3 { font-size:20px; font-weight:900; color:#fff; margin-bottom:6px; }
+.submit-final p  { font-size:14px; color:#94a3b8; margin-bottom:24px; }
+.submit-list { display:flex; flex-direction:column; gap:8px; }
+.submit-item { display:flex; align-items:center; gap:12px; padding:11px 16px; border-radius:10px; background:rgba(255,255,255,.03); border:1px solid var(--border); font-size:13px; cursor:pointer; transition:all .2s; }
+.submit-item:hover { border-color:#7c3aed; }
+.submit-item.checked { background:rgba(124,58,237,.07); border-color:rgba(124,58,237,.35); }
+.s-box { width:20px; height:20px; border-radius:5px; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; transition:all .2s; }
+.submit-item.checked .s-box { background:#7c3aed; border-color:#7c3aed; color:#fff; }
+.submit-item.checked span { text-decoration:line-through; color:var(--dim); }
+
+.footer { text-align:center; margin-top:48px; padding:24px; border-top:1px solid var(--border); color:var(--dim); font-size:13px; }
+.footer strong { color:#c4b5fd; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">🏆 FINAL PROJECT</div>
+  <h1>FastAPI Internship<br>Final Project</h1>
+  <p class="hero-sub">You have 6 days of FastAPI skills. Now build something real. Choose one project from the 10 options below and complete all 20 questions — from beginner to hard.</p>
+  <div class="hero-pills">
+    <div class="hpill hp-gold">📋 Choose 1 of 10 Projects</div>
+    <div class="hpill hp-green">20 Questions per Project</div>
+    <div class="hpill hp-purple">All Day 1–6 Concepts</div>
+    <div class="hpill hp-blue">⏱ 6–8 Hours</div>
+    <div class="hpill hp-red">Solo Submission</div>
+  </div>
+  <div class="day-legend">
+    <div class="dl-item"><div class="dl-dot" style="background:#10b981"></div>Day 1 — GET, JSON</div>
+    <div class="dl-item"><div class="dl-dot" style="background:#3b82f6"></div>Day 2 — POST, Pydantic</div>
+    <div class="dl-item"><div class="dl-dot" style="background:#f59e0b"></div>Day 3 — Helpers, Filter</div>
+    <div class="dl-item"><div class="dl-dot" style="background:#f97316"></div>Day 4 — CRUD</div>
+    <div class="dl-item"><div class="dl-dot" style="background:#0d9488"></div>Day 5 — Cart / Workflow</div>
+    <div class="dl-item"><div class="dl-dot" style="background:#6366f1"></div>Day 6 — Search, Sort, Pagination</div>
+  </div>
+</div>
+
+<!-- RULES -->
+<div class="rules-box">
+  <div class="rules-icon">📌</div>
+  <div class="rules-body">
+    <h3>Rules & Requirements</h3>
+    <ul>
+      <li>Start a brand new <span class="ic">main.py</span> — do not copy the e-commerce project. Your data and models must match your chosen domain.</li>
+      <li>All 6 Day concepts must appear — GET routes, POST with Pydantic, helper functions, CRUD, multi-step workflow, and search/sort/pagination.</li>
+      <li>Every endpoint must be tested and working in Swagger UI at <span class="ic">http://127.0.0.1:8000/docs</span></li>
+      <li>Route order rule still applies — fixed routes must come before variable <span class="ic">/{id}</span> routes in the file.</li>
+      <li>Submit your <span class="ic">main.py</span> + screenshots of every question tested in Swagger.</li>
+      <li>No copying between students — each person builds independently.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- CONCEPTS -->
+<div class="sec-hdr"><h2>Concepts You Must Cover</h2><span class="badge">All 6 Days</span></div>
+<div class="concepts-grid">
+  <div class="concept-card"><span class="concept-day cd1">Day 1</span><div class="concept-text"><strong>GET Endpoints + JSON</strong>List all, get one by ID, home route, counts</div></div>
+  <div class="concept-card"><span class="concept-day cd2">Day 2</span><div class="concept-text"><strong>POST + Pydantic Models</strong>Request body validation — Field, min_length, gt, le</div></div>
+  <div class="concept-card"><span class="concept-day cd3">Day 3</span><div class="concept-text"><strong>Helpers + Filter</strong>find_item(), calculate_*(), filter with Query + is not None</div></div>
+  <div class="concept-card"><span class="concept-day cd4">Day 4</span><div class="concept-text"><strong>CRUD — POST PUT DELETE</strong>Add, update, delete with 201 / 404 status codes</div></div>
+  <div class="concept-card"><span class="concept-day cd5">Day 5</span><div class="concept-text"><strong>Multi-step Workflow</strong>3+ connected endpoints — cart, queue, booking flow</div></div>
+  <div class="concept-card"><span class="concept-day cd6">Day 6</span><div class="concept-text"><strong>Search + Sort + Pagination</strong>keyword search, sorted(), page/limit with total_pages</div></div>
+</div>
+
+<!-- PROJECTS -->
+<div class="sec-hdr"><h2>Choose Your Project</h2><span class="badge">Pick 1 of 10</span></div>
+<p style="font-size:13px;color:#64748b;margin-bottom:20px;">Click a project header to expand its 20 questions. Click <strong style="color:#fcd34d">Select</strong> to mark your choice.</p>
+
+<div class="projects-grid">
+  <!-- PROJECT 1 -->
+  <div class="proj-card" id="proj-1">
+    <div class="proj-header" onclick="toggleProject(1)">
+      <div class="proj-num pn1">1</div>
+      <div class="proj-info">
+        <div class="proj-title">🍕 Food Delivery App</div>
+        <div class="proj-tagline">Manage a restaurant menu, take orders, and track delivery</div>
+        <div class="proj-tags"><span class="ptag">Menu</span><span class="ptag">Orders</span><span class="ptag">Cart</span><span class="ptag">Delivery</span></div>
+      </div>
+      <button class="proj-select-btn" onclick="event.stopPropagation();selectProject(1)">Select</button>
+    </div>
+    <div class="proj-body" id="body-1">
+        <div class="diff-section">
+          <div class="diff-section-hdr dsh-beginner">
+            <span class="dsh-label">Beginner</span>
+            <span class="dsh-desc">Set up data and basic GET endpoints</span>
+            <span class="dsh-count">Q1–5</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">1</div>\n            <div class="pq-content"><p>Create your <code>main.py</code>. Import FastAPI, create <code>app = FastAPI()</code>. Add <code>GET /</code> that returns a welcome JSON message like <code>{\'message\': \'Welcome to QuickBite Food Delivery\'}</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">2</div>\n            <div class="pq-content"><p>Create a list called <code>menu</code> with at least 6 items. Each item must have: <code>id</code>, <code>name</code>, <code>price</code>, <code>category</code> (Pizza/Burger/Drink/Dessert), <code>is_available</code> (bool). Build <code>GET /menu</code> that returns all items and a <code>total</code> count.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">3</div>\n            <div class="pq-content"><p>Build <code>GET /menu/{item_id}</code>. If the item exists, return it. If not, return <code>{\'error\': \'Item not found\'}</code>. Test with a valid ID and an invalid ID (e.g. 999).</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">4</div>\n            <div class="pq-content"><p>Create an <code>orders</code> list (starts empty) and an <code>order_counter = 1</code> variable. Build <code>GET /orders</code> that returns all orders placed so far and a <code>total_orders</code> count.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">5</div>\n            <div class="pq-content"><p>Build <code>GET /menu/summary</code> (place it above <code>/menu/{item_id}</code>). Return: total menu items, how many are available, how many are unavailable, and a list of all unique categories.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-easy">
+            <span class="dsh-label">Easy</span>
+            <span class="dsh-desc">Pydantic models, POST, and helper functions</span>
+            <span class="dsh-count">Q6–10</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">6</div>\n            <div class="pq-content"><p>Create a Pydantic model <code>OrderRequest</code> with: <code>customer_name</code> (str, min_length=2), <code>item_id</code> (int, gt=0), <code>quantity</code> (int, gt=0, le=20), <code>delivery_address</code> (str, min_length=10). Try sending a request with quantity=0 to confirm Pydantic rejects it.</p><div class="day-tags"><span class="dtag cd2">Day 2</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">7</div>\n            <div class="pq-content"><p>Write a helper function <code>find_menu_item(item_id)</code> that loops through <code>menu</code> and returns the item dict if found, or <code>None</code>. Write a second helper <code>calculate_bill(price, quantity)</code> that returns <code>price * quantity</code>. These must be plain functions — no <code>@app</code> decorator.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">8</div>\n            <div class="pq-content"><p>Build <code>POST /orders</code> using <code>OrderRequest</code>. Use <code>find_menu_item()</code> to check the item exists — if not, return an error. Check <code>is_available</code> — if False, return an error. Use <code>calculate_bill()</code>, create the order dict with <code>order_id</code>, append to <code>orders</code>, increment counter. Return the confirmed order.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">9</div>\n            <div class="pq-content"><p>Add an <code>order_type</code> field to <code>OrderRequest</code> with a default value of <code>\'delivery\'</code>. Modify <code>calculate_bill()</code> to add a ₹30 delivery charge when order_type is <code>\'delivery\'</code> and no charge for <code>\'pickup\'</code>. Test both types.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">10</div>\n            <div class="pq-content"><p>Build <code>GET /menu/filter</code> with optional query params: <code>category</code> (str), <code>max_price</code> (int), <code>is_available</code> (bool). Write a helper <code>filter_menu_logic()</code> that applies all three filters — every check must use <code>is not None</code>. Return filtered items and count.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-medium">
+            <span class="dsh-label">Medium</span>
+            <span class="dsh-desc">CRUD operations and multi-step workflows</span>
+            <span class="dsh-count">Q11–15</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">11</div>\n            <div class="pq-content"><p>Create a Pydantic model <code>NewMenuItem</code> with: <code>name</code> (min 2), <code>price</code> (gt 0), <code>category</code> (min 2), <code>is_available</code> (default True). Build <code>POST /menu</code> — check for a duplicate name (case-insensitive) and return a 400-style error if found. Otherwise assign a new id, append to menu, and return the item with <code>response.status_code = 201</code>.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">12</div>\n            <div class="pq-content"><p>Build <code>PUT /menu/{item_id}</code> with optional query params <code>price</code> (int) and <code>is_available</code> (bool). Use <code>find_menu_item()</code> — return 404 error if not found. Apply only the fields that are not None. Return the updated item. Test: update only price, then only availability, then both at once.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">13</div>\n            <div class="pq-content"><p>Build <code>DELETE /menu/{item_id}</code>. Use <code>find_menu_item()</code>. If not found return an error. Otherwise remove it from the menu list with <code>menu.remove()</code> and return a success message with the deleted item\'s name. Test: delete an item, then try to delete it again to confirm the second call returns an error.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">14</div>\n            <div class="pq-content"><p>Build a cart system. Add <code>cart = []</code>. Build <code>POST /cart/add</code> (query params: <code>item_id</code>, <code>quantity</code> default 1) — block unavailable items, and if the item is already in the cart update its quantity instead of adding a duplicate. Build <code>GET /cart</code> returning all cart items and a <code>grand_total</code>. Route order: <code>/cart/add</code> must come before <code>/cart/{item_id}</code>.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">15</div>\n            <div class="pq-content"><p>Build <code>DELETE /cart/{item_id}</code> to remove one item from the cart. Then build <code>POST /cart/checkout</code> — reject if cart is empty, loop through cart items and create an order for each one, clear the cart, return all placed orders and a grand total with <code>status_code = 201</code>. The <code>CheckoutRequest</code> model needs <code>customer_name</code> and <code>delivery_address</code>.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-hard">
+            <span class="dsh-label">Hard</span>
+            <span class="dsh-desc">Search, sort, pagination, and combined logic</span>
+            <span class="dsh-count">Q16–20</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">16</div>\n            <div class="pq-content"><p>Build <code>GET /menu/search</code> with required query param <code>keyword</code> (str). Search across both <code>name</code> and <code>category</code> fields — case-insensitive. If no results, return a friendly message instead of an empty list. Return matching items and a <code>total_found</code> count.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">17</div>\n            <div class="pq-content"><p>Build <code>GET /menu/sort</code> with params <code>sort_by</code> (default <code>\'price\'</code>) and <code>order</code> (default <code>\'asc\'</code>). Validate that <code>sort_by</code> is one of <code>[\'price\',\'name\',\'category\']</code> and <code>order</code> is <code>\'asc\'</code> or <code>\'desc\'</code>. Return sorted menu with the applied sort settings in the response.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">18</div>\n            <div class="pq-content"><p>Build <code>GET /menu/page</code> with params <code>page</code> (default 1, ge=1) and <code>limit</code> (default 3, ge=1, le=10). Use the formula <code>start = (page-1)*limit</code> and slice <code>menu[start:start+limit]</code>. Return <code>page</code>, <code>limit</code>, <code>total</code>, <code>total_pages</code> (ceiling division), and the items for that page.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">19</div>\n            <div class="pq-content"><p>Build <code>GET /orders/search</code> that searches orders by <code>customer_name</code> (case-insensitive, required query param). Also build <code>GET /orders/sort</code> that sorts orders by <code>total_price</code> (asc/desc). Both must be placed above any variable route like <code>/orders/{id}</code>.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#10b981,#06b6d4)">20</div>\n            <div class="pq-content"><p>Build <code>GET /menu/browse</code> — a single smart endpoint that combines search + sort + pagination. All params optional: <code>keyword</code> (str), <code>sort_by</code> (default <code>\'price\'</code>), <code>order</code> (default <code>\'asc\'</code>), <code>page</code> (default 1), <code>limit</code> (default 4). Apply in order: filter → sort → paginate. Return all pagination metadata plus the filtered and sorted items for that page.</p><div class="day-tags"><span class="dtag cd6">Day 6</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>
+    </div>
+  </div>
+  <!-- PROJECT 2 -->
+  <div class="proj-card" id="proj-2">
+    <div class="proj-header" onclick="toggleProject(2)">
+      <div class="proj-num pn2">2</div>
+      <div class="proj-info">
+        <div class="proj-title">📚 Library Book System</div>
+        <div class="proj-tagline">Manage books, handle borrows, and track member activity</div>
+        <div class="proj-tags"><span class="ptag">Books</span><span class="ptag">Borrow</span><span class="ptag">Queue</span><span class="ptag">Return</span></div>
+      </div>
+      <button class="proj-select-btn" onclick="event.stopPropagation();selectProject(2)">Select</button>
+    </div>
+    <div class="proj-body" id="body-2">
+        <div class="diff-section">
+          <div class="diff-section-hdr dsh-beginner">
+            <span class="dsh-label">Beginner</span>
+            <span class="dsh-desc">Set up data and basic GET endpoints</span>
+            <span class="dsh-count">Q1–5</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">1</div>\n            <div class="pq-content"><p>Create <code>main.py</code>. Import FastAPI, create <code>app = FastAPI()</code>. Add <code>GET /</code> that returns <code>{\'message\': \'Welcome to City Public Library\'}</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">2</div>\n            <div class="pq-content"><p>Create a <code>books</code> list with at least 6 books. Each book: <code>id</code>, <code>title</code>, <code>author</code>, <code>genre</code> (Fiction/Science/History/Tech), <code>is_available</code> (bool). Build <code>GET /books</code> returning all books, <code>total</code> count, and <code>available_count</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">3</div>\n            <div class="pq-content"><p>Build <code>GET /books/{book_id}</code>. Return the book if found, or <code>{\'error\': \'Book not found\'}</code> if not. Test with a valid and an invalid ID.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">4</div>\n            <div class="pq-content"><p>Create <code>borrow_records = []</code> and <code>record_counter = 1</code>. Build <code>GET /borrow-records</code> returning all borrow records and a <code>total</code> count.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">5</div>\n            <div class="pq-content"><p>Build <code>GET /books/summary</code> (above <code>/books/{book_id}</code>). Return: total books, available count, borrowed count, and a breakdown of books per genre as a dict like <code>{\'Fiction\': 2, \'Tech\': 3}</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-easy">
+            <span class="dsh-label">Easy</span>
+            <span class="dsh-desc">Pydantic models, POST, and helper functions</span>
+            <span class="dsh-count">Q6–10</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">6</div>\n            <div class="pq-content"><p>Create <code>BorrowRequest</code> Pydantic model: <code>member_name</code> (min_length=2), <code>book_id</code> (gt=0), <code>borrow_days</code> (gt=0, le=30), <code>member_id</code> (str, min_length=4). Try sending <code>borrow_days=0</code> to confirm validation rejects it.</p><div class="day-tags"><span class="dtag cd2">Day 2</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">7</div>\n            <div class="pq-content"><p>Write helper <code>find_book(book_id)</code> that returns the book or None. Write <code>calculate_due_date(borrow_days)</code> that returns a string like <code>\'Return by: Day X\'</code> (just add days to a base number for simplicity — e.g. <code>f\'Return by: Day {15 + borrow_days}\'</code>). Plain functions, no decorator.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">8</div>\n            <div class="pq-content"><p>Build <code>POST /borrow</code> using <code>BorrowRequest</code>. Check book exists using helper — error if not. Check <code>is_available</code> — error if already borrowed. Mark book <code>is_available = False</code>. Use <code>calculate_due_date()</code>. Append record with <code>record_id</code>. Return confirmed borrow record.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">9</div>\n            <div class="pq-content"><p>Add a <code>member_type</code> field to <code>BorrowRequest</code> (default <code>\'regular\'</code>). Modify <code>calculate_due_date()</code> — if <code>member_type == \'premium\'</code> allow up to 60 days; regular members are capped at 30. Return the appropriate due date message.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">10</div>\n            <div class="pq-content"><p>Build <code>GET /books/filter</code> with optional params: <code>genre</code> (str), <code>author</code> (str), <code>is_available</code> (bool). Write <code>filter_books_logic()</code> helper — use <code>is not None</code> for every check. Return filtered books and count.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-medium">
+            <span class="dsh-label">Medium</span>
+            <span class="dsh-desc">CRUD operations and multi-step workflows</span>
+            <span class="dsh-count">Q11–15</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">11</div>\n            <div class="pq-content"><p>Create <code>NewBook</code> Pydantic model: <code>title</code> (min 2), <code>author</code> (min 2), <code>genre</code> (min 2), <code>is_available</code> (default True). Build <code>POST /books</code> — reject duplicate titles (case-insensitive). Assign new id, return added book with <code>status_code = 201</code>.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">12</div>\n            <div class="pq-content"><p>Build <code>PUT /books/{book_id}</code> with optional query params <code>genre</code> (str) and <code>is_available</code> (bool). If not found, return 404 error. Apply only non-None updates. Return the updated book.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">13</div>\n            <div class="pq-content"><p>Build <code>DELETE /books/{book_id}</code>. Return 404 if not found. Remove from list and return the deleted book\'s title in the success message. Then test: delete a book and try to borrow it — confirm it\'s gone.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">14</div>\n            <div class="pq-content"><p>Build a borrow queue. Add <code>queue = []</code>. Build <code>POST /queue/add</code> (query params: <code>member_name</code>, <code>book_id</code>) — only add if the book is currently unavailable. If book doesn\'t exist, return error. Build <code>GET /queue</code> returning the waitlist.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">15</div>\n            <div class="pq-content"><p>Build <code>POST /return/{book_id}</code> — find the book, mark <code>is_available = True</code>. Then check the <code>queue</code>: if anyone is waiting for that book, automatically create a borrow record for the first person in line and remove them from the queue. Return what happened — either \'returned and re-assigned\' or \'returned and available\'.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-hard">
+            <span class="dsh-label">Hard</span>
+            <span class="dsh-desc">Search, sort, pagination, and combined logic</span>
+            <span class="dsh-count">Q16–20</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">16</div>\n            <div class="pq-content"><p>Build <code>GET /books/search</code> with required param <code>keyword</code> (str). Search across <code>title</code> AND <code>author</code> fields, case-insensitive. If the keyword appears in either field, include the book. Return results and <code>total_found</code>. Test: search \'a\' and confirm books by authors with \'a\' or titles with \'a\' all appear.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">17</div>\n            <div class="pq-content"><p>Build <code>GET /books/sort</code> with params <code>sort_by</code> (default <code>\'title\'</code>) and <code>order</code> (default <code>\'asc\'</code>). Allow <code>sort_by</code> values: <code>title</code>, <code>author</code>, <code>genre</code>. Validate both params and return an error for invalid values. Return sorted books with sort metadata.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">18</div>\n            <div class="pq-content"><p>Build <code>GET /books/page</code> with <code>page</code> (default 1) and <code>limit</code> (default 3). Apply pagination formula. Return <code>total</code>, <code>total_pages</code>, current <code>page</code>, <code>limit</code>, and the sliced book list. Test: navigate through all pages.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">19</div>\n            <div class="pq-content"><p>Build <code>GET /borrow-records/search</code> — search records by <code>member_name</code> (case-insensitive). Also build <code>GET /borrow-records/page</code> for paginating borrow records with page and limit params. Place both above any variable routes.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">20</div>\n            <div class="pq-content"><p>Build <code>GET /books/browse</code> combining all three: optional <code>keyword</code>, <code>sort_by</code> (default <code>\'title\'</code>), <code>order</code> (default <code>\'asc\'</code>), <code>page</code>, <code>limit</code>. Filter first, then sort, then paginate. Response must include: keyword used, sort settings, pagination info, and results. Test with keyword + sort + page all set at once.</p><div class="day-tags"><span class="dtag cd6">Day 6</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>
+    </div>
+  </div>
+  <!-- PROJECT 3 -->
+  <div class="proj-card" id="proj-3">
+    <div class="proj-header" onclick="toggleProject(3)">
+      <div class="proj-num pn3">3</div>
+      <div class="proj-info">
+        <div class="proj-title">🏨 Hotel Room Booking</div>
+        <div class="proj-tagline">Manage rooms, guest bookings, and check-in/check-out</div>
+        <div class="proj-tags"><span class="ptag">Rooms</span><span class="ptag">Bookings</span><span class="ptag">Check-in</span><span class="ptag">Floor Filter</span></div>
+      </div>
+      <button class="proj-select-btn" onclick="event.stopPropagation();selectProject(3)">Select</button>
+    </div>
+    <div class="proj-body" id="body-3">
+        <div class="diff-section">
+          <div class="diff-section-hdr dsh-beginner">
+            <span class="dsh-label">Beginner</span>
+            <span class="dsh-desc">Set up data and basic GET endpoints</span>
+            <span class="dsh-count">Q1–5</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">1</div>\n            <div class="pq-content"><p>Create <code>main.py</code>. Add <code>GET /</code> returning <code>{\'message\': \'Welcome to Grand Stay Hotel\'}</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">2</div>\n            <div class="pq-content"><p>Create a <code>rooms</code> list with at least 6 rooms: <code>id</code>, <code>room_number</code> (str like \'101\'), <code>type</code> (Single/Double/Suite/Deluxe), <code>price_per_night</code> (int), <code>floor</code> (int), <code>is_available</code> (bool). Build <code>GET /rooms</code> returning all rooms, <code>total</code>, and <code>available_count</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">3</div>\n            <div class="pq-content"><p>Build <code>GET /rooms/{room_id}</code>. Return the room or an error if not found. Test with valid and invalid IDs.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">4</div>\n            <div class="pq-content"><p>Create <code>bookings = []</code> and <code>booking_counter = 1</code>. Build <code>GET /bookings</code> returning all bookings with a <code>total</code> count.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">5</div>\n            <div class="pq-content"><p>Build <code>GET /rooms/summary</code> (above <code>/rooms/{room_id}</code>). Return: total rooms, available count, occupied count, cheapest room price, most expensive room price, and a breakdown of rooms by type.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-easy">
+            <span class="dsh-label">Easy</span>
+            <span class="dsh-desc">Pydantic models, POST, and helper functions</span>
+            <span class="dsh-count">Q6–10</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">6</div>\n            <div class="pq-content"><p>Create <code>BookingRequest</code>: <code>guest_name</code> (min 2), <code>room_id</code> (gt 0), <code>nights</code> (gt 0, le 30), <code>phone</code> (str, min_length=10), <code>meal_plan</code> (str, default <code>\'none\'</code>). Test validation by sending <code>nights=0</code>.</p><div class="day-tags"><span class="dtag cd2">Day 2</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">7</div>\n            <div class="pq-content"><p>Write helper <code>find_room(room_id)</code>. Write <code>calculate_stay_cost(price_per_night, nights, meal_plan)</code> — add ₹500 per night if meal_plan is <code>\'breakfast\'</code>, ₹1200 per night if <code>\'all-inclusive\'</code>, nothing for <code>\'none\'</code>. Plain functions.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">8</div>\n            <div class="pq-content"><p>Build <code>POST /bookings</code>. Use <code>find_room()</code> — error if not found. Check <code>is_available</code> — error if occupied. Mark room unavailable. Use <code>calculate_stay_cost()</code>. Return booking with <code>booking_id</code>, guest name, room details, nights, meal plan, total cost, and status <code>\'confirmed\'</code>.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">9</div>\n            <div class="pq-content"><p>Add an <code>early_checkout</code> field (bool, default False) to <code>BookingRequest</code>. Modify <code>calculate_stay_cost()</code> — if <code>early_checkout=True</code> apply a 10% discount on the total. Return the discount amount in the response.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">10</div>\n            <div class="pq-content"><p>Build <code>GET /rooms/filter</code> with optional params: <code>type</code> (str), <code>max_price</code> (int), <code>floor</code> (int), <code>is_available</code> (bool). Use <code>filter_rooms_logic()</code> helper with <code>is not None</code> checks. Return filtered rooms and count.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-medium">
+            <span class="dsh-label">Medium</span>
+            <span class="dsh-desc">CRUD operations and multi-step workflows</span>
+            <span class="dsh-count">Q11–15</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">11</div>\n            <div class="pq-content"><p>Create <code>NewRoom</code> model: <code>room_number</code> (min 1), <code>type</code> (min 2), <code>price_per_night</code> (gt 0), <code>floor</code> (gt 0), <code>is_available</code> (default True). Build <code>POST /rooms</code> — reject duplicate room numbers. Return new room with status 201.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">12</div>\n            <div class="pq-content"><p>Build <code>PUT /rooms/{room_id}</code> with optional query params <code>price_per_night</code> (int) and <code>is_available</code> (bool). Return 404 if not found. Apply only non-None changes. Return updated room.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">13</div>\n            <div class="pq-content"><p>Build <code>DELETE /rooms/{room_id}</code>. Return 404 if not found. Also return an error if the room is currently unavailable (occupied — can\'t delete an occupied room). Otherwise remove and return a confirmation.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">14</div>\n            <div class="pq-content"><p>Build check-in workflow. Add a <code>status</code> field to each booking (default <code>\'confirmed\'</code>). Build <code>POST /checkin/{booking_id}</code> — find the booking, set status to <code>\'checked_in\'</code>, return updated booking. Return 404 if booking not found.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">15</div>\n            <div class="pq-content"><p>Build <code>POST /checkout/{booking_id}</code> — find the booking, set status to <code>\'checked_out\'</code>, find the room and mark it <code>is_available = True</code> again. Also build <code>GET /bookings/active</code> (fixed route above variable routes) returning only bookings with status <code>\'confirmed\'</code> or <code>\'checked_in\'</code>.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-hard">
+            <span class="dsh-label">Hard</span>
+            <span class="dsh-desc">Search, sort, pagination, and combined logic</span>
+            <span class="dsh-count">Q16–20</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">16</div>\n            <div class="pq-content"><p>Build <code>GET /rooms/search</code> with required param <code>keyword</code> (str). Search across <code>room_number</code> and <code>type</code> fields, case-insensitive. Return matches and <code>total_found</code>. If nothing matches, return a friendly message.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">17</div>\n            <div class="pq-content"><p>Build <code>GET /rooms/sort</code> — allow sorting by <code>price_per_night</code>, <code>floor</code>, or <code>type</code>. Default: sort by <code>price_per_night</code> ascending. Validate both <code>sort_by</code> and <code>order</code> and return errors for invalid values.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">18</div>\n            <div class="pq-content"><p>Build <code>GET /rooms/page</code> with <code>page</code> (default 1) and <code>limit</code> (default 2). Implement pagination formula, return total and total_pages. Navigate through all pages in Swagger — confirm page 1 and page 2 show different rooms.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">19</div>\n            <div class="pq-content"><p>Build <code>GET /bookings/search</code> — search by <code>guest_name</code> (case-insensitive). Build <code>GET /bookings/sort</code> — sort bookings by <code>total_cost</code> or <code>nights</code>. Both must be placed above any <code>/bookings/{id}</code> route.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">20</div>\n            <div class="pq-content"><p>Build <code>GET /rooms/browse</code> combining: optional <code>keyword</code>, <code>sort_by</code> (default <code>\'price_per_night\'</code>), <code>order</code> (default <code>\'asc\'</code>), <code>page</code> (default 1), <code>limit</code> (default 3). Apply in order: search → sort → paginate. Return full metadata and results. Test with 3 params combined.</p><div class="day-tags"><span class="dtag cd6">Day 6</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>
+    </div>
+  </div>
+  <!-- PROJECT 4 -->
+  <div class="proj-card" id="proj-4">
+    <div class="proj-header" onclick="toggleProject(4)">
+      <div class="proj-num pn4">4</div>
+      <div class="proj-info">
+        <div class="proj-title">💊 Medical Appointment System</div>
+        <div class="proj-tagline">Manage doctors, schedule appointments, and track consultations</div>
+        <div class="proj-tags"><span class="ptag">Doctors</span><span class="ptag">Appointments</span><span class="ptag">Specializations</span><span class="ptag">Fees</span></div>
+      </div>
+      <button class="proj-select-btn" onclick="event.stopPropagation();selectProject(4)">Select</button>
+    </div>
+    <div class="proj-body" id="body-4">
+        <div class="diff-section">
+          <div class="diff-section-hdr dsh-beginner">
+            <span class="dsh-label">Beginner</span>
+            <span class="dsh-desc">Set up data and basic GET endpoints</span>
+            <span class="dsh-count">Q1–5</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">1</div>\n            <div class="pq-content"><p>Create <code>main.py</code>. Add <code>GET /</code> returning <code>{\'message\': \'Welcome to MediCare Clinic\'}</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">2</div>\n            <div class="pq-content"><p>Create a <code>doctors</code> list with at least 6 doctors: <code>id</code>, <code>name</code>, <code>specialization</code> (Cardiologist/Dermatologist/Pediatrician/General), <code>fee</code> (int), <code>experience_years</code> (int), <code>is_available</code> (bool). Build <code>GET /doctors</code> returning all doctors, <code>total</code>, and <code>available_count</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">3</div>\n            <div class="pq-content"><p>Build <code>GET /doctors/{doctor_id}</code>. Return the doctor or an error. Test with valid and invalid IDs.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">4</div>\n            <div class="pq-content"><p>Create <code>appointments = []</code> and <code>appt_counter = 1</code>. Build <code>GET /appointments</code> returning all appointments with <code>total</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">5</div>\n            <div class="pq-content"><p>Build <code>GET /doctors/summary</code> (above <code>/doctors/{doctor_id}</code>). Return: total doctors, available count, most experienced doctor name, cheapest consultation fee, and a count of doctors per specialization.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-easy">
+            <span class="dsh-label">Easy</span>
+            <span class="dsh-desc">Pydantic models, POST, and helper functions</span>
+            <span class="dsh-count">Q6–10</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">6</div>\n            <div class="pq-content"><p>Create <code>AppointmentRequest</code>: <code>patient_name</code> (min 2), <code>doctor_id</code> (gt 0), <code>date</code> (str, min_length=8), <code>reason</code> (str, min_length=5), <code>appointment_type</code> (str, default <code>\'in-person\'</code>). Test validation by sending empty <code>reason</code>.</p><div class="day-tags"><span class="dtag cd2">Day 2</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">7</div>\n            <div class="pq-content"><p>Write helper <code>find_doctor(doctor_id)</code>. Write <code>calculate_fee(base_fee, appointment_type)</code> — <code>\'video\'</code> consultations cost 80% of base fee, <code>\'in-person\'</code> is full fee, <code>\'emergency\'</code> is 150% of base fee. Plain functions.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">8</div>\n            <div class="pq-content"><p>Build <code>POST /appointments</code>. Use <code>find_doctor()</code>. Check <code>is_available</code>. Use <code>calculate_fee()</code>. Return appointment with <code>appointment_id</code>, patient, doctor name, date, type, calculated fee, and status <code>\'scheduled\'</code>.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">9</div>\n            <div class="pq-content"><p>Add a <code>senior_citizen</code> field (bool, default False) to <code>AppointmentRequest</code>. Modify <code>calculate_fee()</code> — if senior_citizen is True, apply an extra 15% discount after all other calculations. Show the original fee and discounted fee in the response.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">10</div>\n            <div class="pq-content"><p>Build <code>GET /doctors/filter</code> with optional params: <code>specialization</code> (str), <code>max_fee</code> (int), <code>min_experience</code> (int), <code>is_available</code> (bool). Use <code>filter_doctors_logic()</code> helper. All checks use <code>is not None</code>.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-medium">
+            <span class="dsh-label">Medium</span>
+            <span class="dsh-desc">CRUD operations and multi-step workflows</span>
+            <span class="dsh-count">Q11–15</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">11</div>\n            <div class="pq-content"><p>Create <code>NewDoctor</code> model: <code>name</code> (min 2), <code>specialization</code> (min 2), <code>fee</code> (gt 0), <code>experience_years</code> (gt 0), <code>is_available</code> (default True). Build <code>POST /doctors</code> — reject duplicate names. Return new doctor with status 201.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">12</div>\n            <div class="pq-content"><p>Build <code>PUT /doctors/{doctor_id}</code> with optional query params <code>fee</code> (int) and <code>is_available</code> (bool). Return 404 if not found. Apply only non-None updates. Return updated doctor.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">13</div>\n            <div class="pq-content"><p>Build <code>DELETE /doctors/{doctor_id}</code>. Return 404 if not found. Also return an error if the doctor has any appointments with status <code>\'scheduled\'</code> (can\'t delete a doctor with active appointments). Otherwise delete and confirm.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">14</div>\n            <div class="pq-content"><p>Add <code>status</code> field to appointments (default <code>\'scheduled\'</code>). Build <code>POST /appointments/{appointment_id}/confirm</code> — change status to <code>\'confirmed\'</code>. Build <code>POST /appointments/{appointment_id}/cancel</code> — change status to <code>\'cancelled\'</code> and mark the doctor <code>is_available = True</code> again.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">15</div>\n            <div class="pq-content"><p>Build <code>POST /appointments/{appointment_id}/complete</code> — change status to <code>\'completed\'</code>. Build <code>GET /appointments/active</code> (fixed route above variable) returning only appointments with status <code>\'scheduled\'</code> or <code>\'confirmed\'</code>. Build <code>GET /appointments/by-doctor/{doctor_id}</code> returning all appointments for a specific doctor.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-hard">
+            <span class="dsh-label">Hard</span>
+            <span class="dsh-desc">Search, sort, pagination, and combined logic</span>
+            <span class="dsh-count">Q16–20</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">16</div>\n            <div class="pq-content"><p>Build <code>GET /doctors/search</code> with required param <code>keyword</code> (str). Search across <code>name</code> AND <code>specialization</code>, case-insensitive. Return matches with <code>total_found</code>. If no results, return a helpful message.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">17</div>\n            <div class="pq-content"><p>Build <code>GET /doctors/sort</code> — allow <code>sort_by</code>: <code>fee</code>, <code>name</code>, <code>experience_years</code>. Default sort by <code>fee</code> ascending. Validate both params. Return sorted list with sort metadata in response.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">18</div>\n            <div class="pq-content"><p>Build <code>GET /doctors/page</code> with <code>page</code> (default 1) and <code>limit</code> (default 3). Full pagination with <code>total_pages</code> (ceiling division). Navigate all pages in Swagger and confirm results.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">19</div>\n            <div class="pq-content"><p>Build <code>GET /appointments/search</code> — search by <code>patient_name</code> (case-insensitive). Build <code>GET /appointments/sort</code> — sort by <code>fee</code> or <code>date</code>. Build <code>GET /appointments/page</code> for paginating the appointments list.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ec4899,#f97316)">20</div>\n            <div class="pq-content"><p>Build <code>GET /doctors/browse</code> combining search + sort + pagination. Optional params: <code>keyword</code>, <code>sort_by</code> (default <code>\'fee\'</code>), <code>order</code> (default <code>\'asc\'</code>), <code>page</code> (default 1), <code>limit</code> (default 4). Apply: filter → sort → paginate. Return full metadata and results.</p><div class="day-tags"><span class="dtag cd6">Day 6</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>
+    </div>
+  </div>
+  <!-- PROJECT 5 -->
+  <div class="proj-card" id="proj-5">
+    <div class="proj-header" onclick="toggleProject(5)">
+      <div class="proj-num pn5">5</div>
+      <div class="proj-info">
+        <div class="proj-title">🎬 Movie Ticket Booking</div>
+        <div class="proj-tagline">Browse movies, book seats, and manage a cinema ticketing system</div>
+        <div class="proj-tags"><span class="ptag">Movies</span><span class="ptag">Seats</span><span class="ptag">Bookings</span><span class="ptag">Showtimes</span></div>
+      </div>
+      <button class="proj-select-btn" onclick="event.stopPropagation();selectProject(5)">Select</button>
+    </div>
+    <div class="proj-body" id="body-5">
+        <div class="diff-section">
+          <div class="diff-section-hdr dsh-beginner">
+            <span class="dsh-label">Beginner</span>
+            <span class="dsh-desc">Set up data and basic GET endpoints</span>
+            <span class="dsh-count">Q1–5</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">1</div>\n            <div class="pq-content"><p>Create <code>main.py</code>. Add <code>GET /</code> returning <code>{\'message\': \'Welcome to CineStar Booking\'}</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">2</div>\n            <div class="pq-content"><p>Create a <code>movies</code> list with at least 6 movies: <code>id</code>, <code>title</code>, <code>genre</code> (Action/Drama/Comedy/Horror), <code>language</code>, <code>duration_mins</code> (int), <code>ticket_price</code> (int), <code>seats_available</code> (int). Build <code>GET /movies</code> returning all movies, <code>total</code>, and <code>total_seats_available</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">3</div>\n            <div class="pq-content"><p>Build <code>GET /movies/{movie_id}</code>. Return the movie or an error. Test with valid and invalid IDs.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">4</div>\n            <div class="pq-content"><p>Create <code>bookings = []</code> and <code>booking_counter = 1</code>. Build <code>GET /bookings</code> returning all bookings with <code>total</code> and <code>total_revenue</code> (sum of all booking totals).</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">5</div>\n            <div class="pq-content"><p>Build <code>GET /movies/summary</code> (above <code>/movies/{movie_id}</code>). Return: total movies, most expensive ticket, cheapest ticket, total seats across all movies, and a count of movies by genre.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-easy">
+            <span class="dsh-label">Easy</span>
+            <span class="dsh-desc">Pydantic models, POST, and helper functions</span>
+            <span class="dsh-count">Q6–10</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">6</div>\n            <div class="pq-content"><p>Create <code>BookingRequest</code>: <code>customer_name</code> (min 2), <code>movie_id</code> (gt 0), <code>seats</code> (gt 0, le 10), <code>phone</code> (min_length=10), <code>seat_type</code> (str, default <code>\'standard\'</code>). Test: send seats=0 and confirm rejection.</p><div class="day-tags"><span class="dtag cd2">Day 2</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">7</div>\n            <div class="pq-content"><p>Write <code>find_movie(movie_id)</code> helper. Write <code>calculate_ticket_cost(base_price, seats, seat_type)</code> — <code>\'premium\'</code> seats cost 1.5× base, <code>\'recliner\'</code> cost 2×, <code>\'standard\'</code> is base price. Return total for all seats. Plain functions.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">8</div>\n            <div class="pq-content"><p>Build <code>POST /bookings</code>. Check movie exists. Check <code>seats_available >= seats</code> — error if not enough. Use <code>calculate_ticket_cost()</code>. Reduce <code>seats_available</code> by the booked count. Return booking with <code>booking_id</code>, movie title, seats, seat type, total cost.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">9</div>\n            <div class="pq-content"><p>Add a <code>promo_code</code> field (str, default <code>\'\'</code>) to <code>BookingRequest</code>. In <code>calculate_ticket_cost()</code>, if promo_code is <code>\'SAVE10\'</code> apply 10% off, if <code>\'SAVE20\'</code> apply 20% off. Return original cost and discounted cost separately.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">10</div>\n            <div class="pq-content"><p>Build <code>GET /movies/filter</code> with optional params: <code>genre</code> (str), <code>language</code> (str), <code>max_price</code> (int), <code>min_seats</code> (int). Use <code>filter_movies_logic()</code> with <code>is not None</code> checks.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-medium">
+            <span class="dsh-label">Medium</span>
+            <span class="dsh-desc">CRUD operations and multi-step workflows</span>
+            <span class="dsh-count">Q11–15</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">11</div>\n            <div class="pq-content"><p>Create <code>NewMovie</code> model: <code>title</code> (min 2), <code>genre</code> (min 2), <code>language</code> (min 2), <code>duration_mins</code> (gt 0), <code>ticket_price</code> (gt 0), <code>seats_available</code> (gt 0). Build <code>POST /movies</code> — reject duplicate titles. Return with status 201.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">12</div>\n            <div class="pq-content"><p>Build <code>PUT /movies/{movie_id}</code> with optional query params <code>ticket_price</code> (int) and <code>seats_available</code> (int). Return 404 if not found. Apply only non-None updates.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">13</div>\n            <div class="pq-content"><p>Build <code>DELETE /movies/{movie_id}</code>. Return 404 if not found. If movie still has bookings (check the bookings list), return an error — cannot delete a movie with existing bookings. Otherwise delete.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">14</div>\n            <div class="pq-content"><p>Build a seat-hold system. Add <code>holds = []</code>. Build <code>POST /seat-hold</code> — request body with <code>customer_name</code>, <code>movie_id</code>, <code>seats</code>. Check movie exists and has enough seats. Reduce <code>seats_available</code> temporarily and add to holds list with a <code>hold_id</code>. Build <code>GET /seat-hold</code> to view all holds.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">15</div>\n            <div class="pq-content"><p>Build <code>POST /seat-confirm/{hold_id}</code> — find the hold, convert it to a confirmed booking (add to bookings list), remove from holds, return booking confirmation. Build <code>DELETE /seat-release/{hold_id}</code> — cancel a hold and add the seats back to <code>seats_available</code>.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-hard">
+            <span class="dsh-label">Hard</span>
+            <span class="dsh-desc">Search, sort, pagination, and combined logic</span>
+            <span class="dsh-count">Q16–20</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">16</div>\n            <div class="pq-content"><p>Build <code>GET /movies/search</code> with required param <code>keyword</code> (str). Search across <code>title</code>, <code>genre</code>, AND <code>language</code> fields, case-insensitive. Return matches and <code>total_found</code>. If no results, return a friendly message.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">17</div>\n            <div class="pq-content"><p>Build <code>GET /movies/sort</code> — allow <code>sort_by</code>: <code>ticket_price</code>, <code>title</code>, <code>duration_mins</code>, <code>seats_available</code>. Default: sort by <code>ticket_price</code> ascending. Validate both params.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">18</div>\n            <div class="pq-content"><p>Build <code>GET /movies/page</code> with <code>page</code> (default 1) and <code>limit</code> (default 3). Return <code>total</code>, <code>total_pages</code>, and sliced list. Test navigating all pages.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">19</div>\n            <div class="pq-content"><p>Build <code>GET /bookings/search</code> — search by <code>customer_name</code>. Build <code>GET /bookings/sort</code> — sort bookings by <code>total_cost</code> or <code>seats</code>. Build <code>GET /bookings/page</code> for paginating bookings.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">20</div>\n            <div class="pq-content"><p>Build <code>GET /movies/browse</code> combining search + sort + pagination. Optional: <code>keyword</code>, <code>sort_by</code> (default <code>\'ticket_price\'</code>), <code>order</code> (default <code>\'asc\'</code>), <code>page</code> (default 1), <code>limit</code> (default 3). Also add optional filter params <code>genre</code> and <code>language</code>. Apply all in order: keyword filter → genre/language filter → sort → paginate.</p><div class="day-tags"><span class="dtag cd6">Day 6</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>
+    </div>
+  </div>
+  <!-- PROJECT 6 -->
+  <div class="proj-card" id="proj-6">
+    <div class="proj-header" onclick="toggleProject(6)">
+      <div class="proj-num pn6">6</div>
+      <div class="proj-info">
+        <div class="proj-title">🛵 Grocery Delivery App</div>
+        <div class="proj-tagline">Manage grocery items, cart, and delivery slot orders</div>
+        <div class="proj-tags"><span class="ptag">Items</span><span class="ptag">Cart</span><span class="ptag">Orders</span><span class="ptag">Delivery Slots</span></div>
+      </div>
+      <button class="proj-select-btn" onclick="event.stopPropagation();selectProject(6)">Select</button>
+    </div>
+    <div class="proj-body" id="body-6">
+        <div class="diff-section">
+          <div class="diff-section-hdr dsh-beginner">
+            <span class="dsh-label">Beginner</span>
+            <span class="dsh-desc">Set up data and basic GET endpoints</span>
+            <span class="dsh-count">Q1–5</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">1</div>\n            <div class="pq-content"><p>Create <code>main.py</code>. Add <code>GET /</code> returning <code>{\'message\': \'Welcome to FreshMart Grocery\'}</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">2</div>\n            <div class="pq-content"><p>Create an <code>items</code> list with at least 6 grocery items: <code>id</code>, <code>name</code>, <code>price</code> (int, per unit), <code>unit</code> (kg/piece/litre/dozen), <code>category</code> (Vegetable/Fruit/Dairy/Grain), <code>in_stock</code> (bool). Build <code>GET /items</code> returning all items, <code>total</code>, and <code>in_stock_count</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">3</div>\n            <div class="pq-content"><p>Build <code>GET /items/{item_id}</code>. Return the item or an error message if not found.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">4</div>\n            <div class="pq-content"><p>Create <code>orders = []</code> and <code>order_counter = 1</code>. Build <code>GET /orders</code> returning all orders with <code>total</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">5</div>\n            <div class="pq-content"><p>Build <code>GET /items/summary</code> (above <code>/items/{item_id}</code>). Return: total items, in-stock count, out-of-stock count, and breakdown of items per category.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-easy">
+            <span class="dsh-label">Easy</span>
+            <span class="dsh-desc">Pydantic models, POST, and helper functions</span>
+            <span class="dsh-count">Q6–10</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">6</div>\n            <div class="pq-content"><p>Create <code>OrderRequest</code>: <code>customer_name</code> (min 2), <code>item_id</code> (gt 0), <code>quantity</code> (gt 0, le 50), <code>delivery_address</code> (min 10), <code>delivery_slot</code> (str, default <code>\'Morning\'</code>). Test validation with quantity=0.</p><div class="day-tags"><span class="dtag cd2">Day 2</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">7</div>\n            <div class="pq-content"><p>Write <code>find_item(item_id)</code> helper. Write <code>calculate_order_total(price, quantity, delivery_slot)</code> — add ₹40 delivery charge for Morning slot, ₹60 for Evening, ₹0 for self-pickup. Plain functions.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">8</div>\n            <div class="pq-content"><p>Build <code>POST /orders</code>. Check item exists using helper. Check <code>in_stock</code>. Use <code>calculate_order_total()</code>. Return order with <code>order_id</code>, item name, quantity, unit, delivery slot, total cost, and status <code>\'confirmed\'</code>.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">9</div>\n            <div class="pq-content"><p>Add a <code>bulk_order</code> field (bool, default False) to <code>OrderRequest</code>. Modify <code>calculate_order_total()</code> — if <code>bulk_order=True</code> and quantity >= 10, apply 8% discount before delivery charge. Show original and discounted amounts.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">10</div>\n            <div class="pq-content"><p>Build <code>GET /items/filter</code> with optional params: <code>category</code> (str), <code>max_price</code> (int), <code>unit</code> (str), <code>in_stock</code> (bool). Use <code>filter_items_logic()</code> helper. All checks must use <code>is not None</code>.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-medium">
+            <span class="dsh-label">Medium</span>
+            <span class="dsh-desc">CRUD operations and multi-step workflows</span>
+            <span class="dsh-count">Q11–15</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">11</div>\n            <div class="pq-content"><p>Create <code>NewItem</code> model: <code>name</code> (min 2), <code>price</code> (gt 0), <code>unit</code> (min 2), <code>category</code> (min 2), <code>in_stock</code> (default True). Build <code>POST /items</code> — reject duplicate names. Return with status 201.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">12</div>\n            <div class="pq-content"><p>Build <code>PUT /items/{item_id}</code> with optional query params <code>price</code> (int) and <code>in_stock</code> (bool). Return 404 if not found. Apply only non-None changes. Return updated item.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">13</div>\n            <div class="pq-content"><p>Build <code>DELETE /items/{item_id}</code>. Return 404 if not found. Return an error if the item has active orders. Otherwise delete and confirm.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">14</div>\n            <div class="pq-content"><p>Build a cart. Add <code>cart = []</code>. Build <code>POST /cart/add</code> (query params: <code>item_id</code>, <code>quantity</code> default 1) — block out-of-stock items, merge quantities if already in cart. Build <code>GET /cart</code> showing items, subtotals, and <code>grand_total</code>.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">15</div>\n            <div class="pq-content"><p>Build <code>DELETE /cart/{item_id}</code> to remove one item. Build <code>POST /cart/checkout</code> — reject if cart empty. <code>CheckoutRequest</code> needs <code>customer_name</code>, <code>delivery_address</code>, <code>delivery_slot</code>. Loop cart, place one order per item, clear cart, return all orders and grand total with status 201.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-hard">
+            <span class="dsh-label">Hard</span>
+            <span class="dsh-desc">Search, sort, pagination, and combined logic</span>
+            <span class="dsh-count">Q16–20</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">16</div>\n            <div class="pq-content"><p>Build <code>GET /items/search</code> with required param <code>keyword</code> (str). Search across <code>name</code> AND <code>category</code>, case-insensitive. Return matches and <code>total_found</code>.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">17</div>\n            <div class="pq-content"><p>Build <code>GET /items/sort</code> — allow <code>sort_by</code>: <code>price</code>, <code>name</code>, <code>category</code>. Default sort by <code>price</code> asc. Validate both params. Return sorted list with metadata.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">18</div>\n            <div class="pq-content"><p>Build <code>GET /items/page</code> with <code>page</code> (default 1) and <code>limit</code> (default 4). Full pagination formula with <code>total_pages</code>. Test all pages.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">19</div>\n            <div class="pq-content"><p>Build <code>GET /orders/search</code> — search by <code>customer_name</code>. Build <code>GET /orders/sort</code> — sort by <code>total_cost</code>. Build <code>GET /orders/page</code> — paginate orders. All above any variable order routes.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#0d9488,#10b981)">20</div>\n            <div class="pq-content"><p>Build <code>GET /items/browse</code> combining: optional <code>keyword</code>, <code>category</code> filter, <code>in_stock</code> filter (bool), <code>sort_by</code>, <code>order</code>, <code>page</code>, <code>limit</code>. Apply in order: keyword search → category filter → in_stock filter → sort → paginate. Return full metadata and results.</p><div class="day-tags"><span class="dtag cd6">Day 6</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>
+    </div>
+  </div>
+  <!-- PROJECT 7 -->
+  <div class="proj-card" id="proj-7">
+    <div class="proj-header" onclick="toggleProject(7)">
+      <div class="proj-num pn7">7</div>
+      <div class="proj-info">
+        <div class="proj-title">🏋️ Gym Management System</div>
+        <div class="proj-tagline">Manage membership plans, enrollments, and class bookings</div>
+        <div class="proj-tags"><span class="ptag">Plans</span><span class="ptag">Members</span><span class="ptag">Classes</span><span class="ptag">Trainer</span></div>
+      </div>
+      <button class="proj-select-btn" onclick="event.stopPropagation();selectProject(7)">Select</button>
+    </div>
+    <div class="proj-body" id="body-7">
+        <div class="diff-section">
+          <div class="diff-section-hdr dsh-beginner">
+            <span class="dsh-label">Beginner</span>
+            <span class="dsh-desc">Set up data and basic GET endpoints</span>
+            <span class="dsh-count">Q1–5</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">1</div>\n            <div class="pq-content"><p>Create <code>main.py</code>. Add <code>GET /</code> returning <code>{\'message\': \'Welcome to IronFit Gym\'}</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">2</div>\n            <div class="pq-content"><p>Create a <code>plans</code> list with at least 5 plans: <code>id</code>, <code>name</code> (Basic/Standard/Premium/Elite), <code>duration_months</code> (int), <code>price</code> (int), <code>includes_classes</code> (bool), <code>includes_trainer</code> (bool). Build <code>GET /plans</code> returning all plans, <code>total</code>, and price range (<code>min_price</code>, <code>max_price</code>).</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">3</div>\n            <div class="pq-content"><p>Build <code>GET /plans/{plan_id}</code>. Return plan or error.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">4</div>\n            <div class="pq-content"><p>Create <code>memberships = []</code> and <code>membership_counter = 1</code>. Build <code>GET /memberships</code> returning all memberships and <code>total</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">5</div>\n            <div class="pq-content"><p>Build <code>GET /plans/summary</code> (above <code>/plans/{plan_id}</code>). Return: total plans, how many include classes, how many include a trainer, cheapest plan name and price, most expensive plan name and price.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-easy">
+            <span class="dsh-label">Easy</span>
+            <span class="dsh-desc">Pydantic models, POST, and helper functions</span>
+            <span class="dsh-count">Q6–10</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">6</div>\n            <div class="pq-content"><p>Create <code>EnrollRequest</code>: <code>member_name</code> (min 2), <code>plan_id</code> (gt 0), <code>phone</code> (min_length=10), <code>start_month</code> (str, min 3), <code>payment_mode</code> (str, default <code>\'cash\'</code>). Test: send phone with 5 digits and confirm rejection.</p><div class="day-tags"><span class="dtag cd2">Day 2</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">7</div>\n            <div class="pq-content"><p>Write <code>find_plan(plan_id)</code> helper. Write <code>calculate_membership_fee(base_price, duration_months, payment_mode)</code> — if duration >= 6 months apply 10% discount; if duration >= 12 months apply 20% discount. Add ₹200 processing fee if payment_mode is <code>\'emi\'</code>. Plain functions.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">8</div>\n            <div class="pq-content"><p>Build <code>POST /memberships</code>. Check plan exists. Use <code>calculate_membership_fee()</code>. Return membership with <code>membership_id</code>, member name, plan name, duration, monthly equivalent cost, total fee, and status <code>\'active\'</code>.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">9</div>\n            <div class="pq-content"><p>Add a <code>referral_code</code> field (str, default <code>\'\'</code>) to <code>EnrollRequest</code>. Modify <code>calculate_membership_fee()</code> — if referral_code is not empty, apply an extra 5% off after all other discounts. Show full discount breakdown in response.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">10</div>\n            <div class="pq-content"><p>Build <code>GET /plans/filter</code> with optional params: <code>max_price</code> (int), <code>max_duration</code> (int), <code>includes_classes</code> (bool), <code>includes_trainer</code> (bool). Use <code>filter_plans_logic()</code> with <code>is not None</code> checks.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-medium">
+            <span class="dsh-label">Medium</span>
+            <span class="dsh-desc">CRUD operations and multi-step workflows</span>
+            <span class="dsh-count">Q11–15</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">11</div>\n            <div class="pq-content"><p>Create <code>NewPlan</code> model: <code>name</code> (min 2), <code>duration_months</code> (gt 0), <code>price</code> (gt 0), <code>includes_classes</code> (bool, default False), <code>includes_trainer</code> (bool, default False). Build <code>POST /plans</code> — reject duplicate names. Return with status 201.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">12</div>\n            <div class="pq-content"><p>Build <code>PUT /plans/{plan_id}</code> with optional query params <code>price</code> (int), <code>includes_classes</code> (bool), <code>includes_trainer</code> (bool). Return 404 if not found. Apply only non-None updates.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">13</div>\n            <div class="pq-content"><p>Build <code>DELETE /plans/{plan_id}</code>. Return 404 if not found. Also check if any active memberships exist for this plan — if yes, return an error (cannot delete a plan with active members). Otherwise delete.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">14</div>\n            <div class="pq-content"><p>Build a class booking system. Add <code>class_bookings = []</code> and <code>class_counter = 1</code>. Build <code>POST /classes/book</code> (request body: <code>member_name</code>, <code>class_name</code>, <code>class_date</code>) — check if member has an active membership that includes classes. If not, return an error. If yes, add to class_bookings. Build <code>GET /classes/bookings</code>.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">15</div>\n            <div class="pq-content"><p>Build <code>DELETE /classes/cancel/{booking_id}</code> to cancel a class booking. Build <code>PUT /memberships/{membership_id}/freeze</code> — change membership status to <code>\'frozen\'</code> (member can pause). Build <code>PUT /memberships/{membership_id}/reactivate</code> — change status back to <code>\'active\'</code>.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-hard">
+            <span class="dsh-label">Hard</span>
+            <span class="dsh-desc">Search, sort, pagination, and combined logic</span>
+            <span class="dsh-count">Q16–20</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">16</div>\n            <div class="pq-content"><p>Build <code>GET /plans/search</code> with required param <code>keyword</code> (str). Search across <code>name</code>, case-insensitive. Also check if the keyword is <code>\'classes\'</code> or <code>\'trainer\'</code> — return plans that include classes or trainer respectively. Return matches and <code>total_found</code>.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">17</div>\n            <div class="pq-content"><p>Build <code>GET /plans/sort</code> — allow <code>sort_by</code>: <code>price</code>, <code>name</code>, <code>duration_months</code>. Default sort by <code>price</code> ascending. Validate params. Return sorted list.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">18</div>\n            <div class="pq-content"><p>Build <code>GET /plans/page</code> with <code>page</code> (default 1) and <code>limit</code> (default 2). Full pagination with <code>total_pages</code>. Test all pages.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">19</div>\n            <div class="pq-content"><p>Build <code>GET /memberships/search</code> — search by <code>member_name</code>. Build <code>GET /memberships/sort</code> — sort by <code>total_fee</code> or <code>duration_months</code>. Build <code>GET /memberships/page</code> for paginating the memberships list.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#f97316,#f59e0b)">20</div>\n            <div class="pq-content"><p>Build <code>GET /plans/browse</code> combining: optional <code>keyword</code>, <code>includes_classes</code> filter (bool), <code>includes_trainer</code> filter (bool), <code>sort_by</code>, <code>order</code>, <code>page</code>, <code>limit</code>. Apply in order: keyword → boolean filters → sort → paginate. Return full metadata.</p><div class="day-tags"><span class="dtag cd6">Day 6</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>
+    </div>
+  </div>
+  <!-- PROJECT 8 -->
+  <div class="proj-card" id="proj-8">
+    <div class="proj-header" onclick="toggleProject(8)">
+      <div class="proj-num pn8">8</div>
+      <div class="proj-info">
+        <div class="proj-title">🎓 Online Course Platform</div>
+        <div class="proj-tagline">Browse courses, enroll students, and manage a learning platform</div>
+        <div class="proj-tags"><span class="ptag">Courses</span><span class="ptag">Enrollments</span><span class="ptag">Wishlist</span><span class="ptag">Instructors</span></div>
+      </div>
+      <button class="proj-select-btn" onclick="event.stopPropagation();selectProject(8)">Select</button>
+    </div>
+    <div class="proj-body" id="body-8">
+        <div class="diff-section">
+          <div class="diff-section-hdr dsh-beginner">
+            <span class="dsh-label">Beginner</span>
+            <span class="dsh-desc">Set up data and basic GET endpoints</span>
+            <span class="dsh-count">Q1–5</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">1</div>\n            <div class="pq-content"><p>Create <code>main.py</code>. Add <code>GET /</code> returning <code>{\'message\': \'Welcome to LearnHub Online Courses\'}</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">2</div>\n            <div class="pq-content"><p>Create a <code>courses</code> list with at least 6 courses: <code>id</code>, <code>title</code>, <code>instructor</code>, <code>category</code> (Web Dev/Data Science/Design/DevOps), <code>level</code> (Beginner/Intermediate/Advanced), <code>price</code> (int), <code>seats_left</code> (int). Build <code>GET /courses</code> returning all courses, <code>total</code>, and <code>total_seats_available</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">3</div>\n            <div class="pq-content"><p>Build <code>GET /courses/{course_id}</code>. Return the course or an error. Test both cases.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">4</div>\n            <div class="pq-content"><p>Create <code>enrollments = []</code> and <code>enrollment_counter = 1</code>. Build <code>GET /enrollments</code> returning all enrollments and <code>total</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">5</div>\n            <div class="pq-content"><p>Build <code>GET /courses/summary</code> (above <code>/courses/{course_id}</code>). Return: total courses, free courses count (price=0), most expensive course, total seats across all courses, and a count by category.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-easy">
+            <span class="dsh-label">Easy</span>
+            <span class="dsh-desc">Pydantic models, POST, and helper functions</span>
+            <span class="dsh-count">Q6–10</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">6</div>\n            <div class="pq-content"><p>Create <code>EnrollRequest</code>: <code>student_name</code> (min 2), <code>course_id</code> (gt 0), <code>email</code> (str, min_length=5), <code>payment_method</code> (str, default <code>\'card\'</code>), <code>coupon_code</code> (str, default <code>\'\'</code>). Test sending an empty email.</p><div class="day-tags"><span class="dtag cd2">Day 2</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">7</div>\n            <div class="pq-content"><p>Write <code>find_course(course_id)</code> helper. Write <code>calculate_enrollment_fee(price, seats_left, coupon_code)</code> — if seats_left > 5 apply 10% early-bird discount; coupon <code>\'STUDENT20\'</code> gives 20% off, <code>\'FLAT500\'</code> deducts ₹500. Apply coupon after early-bird. Plain functions.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">8</div>\n            <div class="pq-content"><p>Build <code>POST /enrollments</code>. Check course exists. Check seats_left > 0. Use <code>calculate_enrollment_fee()</code>. Reduce <code>seats_left</code> by 1. Return enrollment with <code>enrollment_id</code>, student name, course title, instructor, original price, discounts applied, final fee.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">9</div>\n            <div class="pq-content"><p>Add a <code>gift_enrollment</code> field (bool, default False) to <code>EnrollRequest</code> and a <code>recipient_name</code> field (str, default <code>\'\'</code>). If gift_enrollment is True and recipient_name is empty, return a validation error message. If valid, note the recipient in the enrollment record.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">10</div>\n            <div class="pq-content"><p>Build <code>GET /courses/filter</code> with optional params: <code>category</code> (str), <code>level</code> (str), <code>max_price</code> (int), <code>has_seats</code> (bool — True means seats_left > 0). Use <code>filter_courses_logic()</code> with <code>is not None</code> checks.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-medium">
+            <span class="dsh-label">Medium</span>
+            <span class="dsh-desc">CRUD operations and multi-step workflows</span>
+            <span class="dsh-count">Q11–15</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">11</div>\n            <div class="pq-content"><p>Create <code>NewCourse</code> model: <code>title</code> (min 2), <code>instructor</code> (min 2), <code>category</code> (min 2), <code>level</code> (min 2), <code>price</code> (ge=0), <code>seats_left</code> (gt 0). Build <code>POST /courses</code> — reject duplicate titles. Return with status 201.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">12</div>\n            <div class="pq-content"><p>Build <code>PUT /courses/{course_id}</code> with optional query params <code>price</code> (int) and <code>seats_left</code> (int). Return 404 if not found. Apply only non-None updates.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">13</div>\n            <div class="pq-content"><p>Build <code>DELETE /courses/{course_id}</code>. Return 404 if not found. If any enrollments reference this course, return an error (cannot delete course with enrolled students). Otherwise delete.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">14</div>\n            <div class="pq-content"><p>Build a wishlist. Add <code>wishlist = []</code>. Build <code>POST /wishlist/add</code> (query params: <code>student_name</code>, <code>course_id</code>) — check course exists, don\'t allow duplicates for the same student+course combo. Build <code>GET /wishlist</code> returning wishlist items and total wishlist value.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">15</div>\n            <div class="pq-content"><p>Build <code>DELETE /wishlist/remove/{course_id}</code> with query param <code>student_name</code>. Build <code>POST /wishlist/enroll-all</code> — body: <code>student_name</code>, <code>payment_method</code>. Loop all wishlist items for that student, enroll them in each course (check seats), collect all enrollment confirmations, remove from wishlist. Return total enrolled and grand total fee.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-hard">
+            <span class="dsh-label">Hard</span>
+            <span class="dsh-desc">Search, sort, pagination, and combined logic</span>
+            <span class="dsh-count">Q16–20</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">16</div>\n            <div class="pq-content"><p>Build <code>GET /courses/search</code> with required param <code>keyword</code> (str). Search across <code>title</code>, <code>instructor</code>, AND <code>category</code> fields, case-insensitive. Return matches and <code>total_found</code>.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">17</div>\n            <div class="pq-content"><p>Build <code>GET /courses/sort</code> — allow <code>sort_by</code>: <code>price</code>, <code>title</code>, <code>seats_left</code>. Default: sort by <code>price</code> ascending. Validate both params. Return sorted list with metadata.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">18</div>\n            <div class="pq-content"><p>Build <code>GET /courses/page</code> with <code>page</code> (default 1) and <code>limit</code> (default 3). Full pagination. Test all pages — confirm <code>total_pages</code> is correct.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">19</div>\n            <div class="pq-content"><p>Build <code>GET /enrollments/search</code> — search by <code>student_name</code>. Build <code>GET /enrollments/sort</code> — sort by <code>final_fee</code>. Build <code>GET /enrollments/page</code> for paginating enrollments.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">20</div>\n            <div class="pq-content"><p>Build <code>GET /courses/browse</code> — combine: optional <code>keyword</code>, <code>category</code>, <code>level</code>, <code>max_price</code>, <code>sort_by</code>, <code>order</code>, <code>page</code>, <code>limit</code>. Apply: keyword search → category filter → level filter → price filter → sort → paginate. Return full metadata and results.</p><div class="day-tags"><span class="dtag cd6">Day 6</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>
+    </div>
+  </div>
+  <!-- PROJECT 9 -->
+  <div class="proj-card" id="proj-9">
+    <div class="proj-header" onclick="toggleProject(9)">
+      <div class="proj-num pn9">9</div>
+      <div class="proj-info">
+        <div class="proj-title">🚗 Car Rental Service</div>
+        <div class="proj-tagline">Browse cars, manage rentals, returns, and driver options</div>
+        <div class="proj-tags"><span class="ptag">Cars</span><span class="ptag">Rentals</span><span class="ptag">Returns</span><span class="ptag">Insurance</span></div>
+      </div>
+      <button class="proj-select-btn" onclick="event.stopPropagation();selectProject(9)">Select</button>
+    </div>
+    <div class="proj-body" id="body-9">
+        <div class="diff-section">
+          <div class="diff-section-hdr dsh-beginner">
+            <span class="dsh-label">Beginner</span>
+            <span class="dsh-desc">Set up data and basic GET endpoints</span>
+            <span class="dsh-count">Q1–5</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">1</div>\n            <div class="pq-content"><p>Create <code>main.py</code>. Add <code>GET /</code> returning <code>{\'message\': \'Welcome to SpeedRide Car Rentals\'}</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">2</div>\n            <div class="pq-content"><p>Create a <code>cars</code> list with at least 6 cars: <code>id</code>, <code>model</code>, <code>brand</code>, <code>type</code> (Hatchback/Sedan/SUV/Luxury), <code>price_per_day</code> (int), <code>fuel_type</code> (Petrol/Diesel/Electric), <code>is_available</code> (bool). Build <code>GET /cars</code> returning all cars, <code>total</code>, and <code>available_count</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">3</div>\n            <div class="pq-content"><p>Build <code>GET /cars/{car_id}</code>. Return car or error. Test both.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">4</div>\n            <div class="pq-content"><p>Create <code>rentals = []</code> and <code>rental_counter = 1</code>. Build <code>GET /rentals</code> returning all rentals and <code>total</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">5</div>\n            <div class="pq-content"><p>Build <code>GET /cars/summary</code> (above <code>/cars/{car_id}</code>). Return: total cars, available count, breakdown by type, breakdown by fuel_type, cheapest and most expensive car per day.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-easy">
+            <span class="dsh-label">Easy</span>
+            <span class="dsh-desc">Pydantic models, POST, and helper functions</span>
+            <span class="dsh-count">Q6–10</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">6</div>\n            <div class="pq-content"><p>Create <code>RentalRequest</code>: <code>customer_name</code> (min 2), <code>car_id</code> (gt 0), <code>days</code> (gt 0, le 30), <code>license_number</code> (str, min_length=8), <code>insurance</code> (bool, default False). Test: send days=0 and confirm rejection.</p><div class="day-tags"><span class="dtag cd2">Day 2</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">7</div>\n            <div class="pq-content"><p>Write <code>find_car(car_id)</code> helper. Write <code>calculate_rental_cost(price_per_day, days, insurance)</code> — for 7+ days apply 15% discount; for 15+ days apply 25% discount. Add ₹500/day if insurance=True. Plain functions.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">8</div>\n            <div class="pq-content"><p>Build <code>POST /rentals</code>. Check car exists and is available. Mark car unavailable. Use <code>calculate_rental_cost()</code>. Return rental with <code>rental_id</code>, car model and brand, days, insurance, base cost, discount, total cost, and status <code>\'active\'</code>.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">9</div>\n            <div class="pq-content"><p>Add a <code>driver_required</code> field (bool, default False) to <code>RentalRequest</code>. Modify <code>calculate_rental_cost()</code> — add ₹800/day if driver required. Show cost breakdown in response: base cost, discount, insurance cost, driver cost, total.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">10</div>\n            <div class="pq-content"><p>Build <code>GET /cars/filter</code> with optional params: <code>type</code> (str), <code>brand</code> (str), <code>fuel_type</code> (str), <code>max_price</code> (int), <code>is_available</code> (bool). Use <code>filter_cars_logic()</code> with <code>is not None</code>.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-medium">
+            <span class="dsh-label">Medium</span>
+            <span class="dsh-desc">CRUD operations and multi-step workflows</span>
+            <span class="dsh-count">Q11–15</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">11</div>\n            <div class="pq-content"><p>Create <code>NewCar</code> model: <code>model</code> (min 2), <code>brand</code> (min 2), <code>type</code> (min 2), <code>price_per_day</code> (gt 0), <code>fuel_type</code> (min 2), <code>is_available</code> (default True). Build <code>POST /cars</code> — reject if model+brand combo already exists. Return with status 201.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">12</div>\n            <div class="pq-content"><p>Build <code>PUT /cars/{car_id}</code> with optional query params <code>price_per_day</code> (int) and <code>is_available</code> (bool). Return 404 if not found. Apply only non-None updates.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">13</div>\n            <div class="pq-content"><p>Build <code>DELETE /cars/{car_id}</code>. Return 404 if not found. Return error if car has an active rental (status <code>\'active\'</code>). Otherwise delete.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">14</div>\n            <div class="pq-content"><p>Build a return workflow. Build <code>POST /return/{rental_id}</code> — find the rental by id (add a <code>GET /rentals/{rental_id}</code> endpoint too). Set rental status to <code>\'returned\'</code>. Mark the car available again. Return the rental record with final status.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">15</div>\n            <div class="pq-content"><p>Build <code>GET /rentals/active</code> — fixed route, returns only rentals with status <code>\'active\'</code>. Build <code>GET /rentals/by-car/{car_id}</code> — all rental history for a specific car. Build <code>GET /cars/unavailable</code> — fixed route returning all unavailable cars.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-hard">
+            <span class="dsh-label">Hard</span>
+            <span class="dsh-desc">Search, sort, pagination, and combined logic</span>
+            <span class="dsh-count">Q16–20</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">16</div>\n            <div class="pq-content"><p>Build <code>GET /cars/search</code> with required param <code>keyword</code> (str). Search across <code>model</code>, <code>brand</code>, AND <code>type</code>, case-insensitive. Return matches and <code>total_found</code>.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">17</div>\n            <div class="pq-content"><p>Build <code>GET /cars/sort</code> — allow <code>sort_by</code>: <code>price_per_day</code>, <code>brand</code>, <code>type</code>. Default: sort by <code>price_per_day</code> ascending. Validate params. Return sorted list.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">18</div>\n            <div class="pq-content"><p>Build <code>GET /cars/page</code> with <code>page</code> (default 1) and <code>limit</code> (default 3). Full pagination. Test all pages in Swagger.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">19</div>\n            <div class="pq-content"><p>Build <code>GET /rentals/search</code> — search by <code>customer_name</code>. Build <code>GET /rentals/sort</code> — sort by <code>total_cost</code> or <code>days</code>. Build <code>GET /rentals/page</code> — paginate rental list.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#a855f7,#ec4899)">20</div>\n            <div class="pq-content"><p>Build <code>GET /cars/browse</code> combining: optional <code>keyword</code>, <code>type</code> filter, <code>fuel_type</code> filter, <code>max_price</code> filter, <code>is_available</code> filter, <code>sort_by</code>, <code>order</code>, <code>page</code>, <code>limit</code>. Apply all in order. Return full metadata and results.</p><div class="day-tags"><span class="dtag cd6">Day 6</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>
+    </div>
+  </div>
+  <!-- PROJECT 10 -->
+  <div class="proj-card" id="proj-10">
+    <div class="proj-header" onclick="toggleProject(10)">
+      <div class="proj-num pn10">10</div>
+      <div class="proj-info">
+        <div class="proj-title">🛍️ Fashion Store</div>
+        <div class="proj-tagline">Browse clothing, manage sizes, wishlists, and season sales</div>
+        <div class="proj-tags"><span class="ptag">Products</span><span class="ptag">Sizes</span><span class="ptag">Wishlist</span><span class="ptag">Orders</span></div>
+      </div>
+      <button class="proj-select-btn" onclick="event.stopPropagation();selectProject(10)">Select</button>
+    </div>
+    <div class="proj-body" id="body-10">
+        <div class="diff-section">
+          <div class="diff-section-hdr dsh-beginner">
+            <span class="dsh-label">Beginner</span>
+            <span class="dsh-desc">Set up data and basic GET endpoints</span>
+            <span class="dsh-count">Q1–5</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">1</div>\n            <div class="pq-content"><p>Create <code>main.py</code>. Add <code>GET /</code> returning <code>{\'message\': \'Welcome to TrendZone Fashion Store\'}</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">2</div>\n            <div class="pq-content"><p>Create a <code>products</code> list with at least 6 clothing items: <code>id</code>, <code>name</code>, <code>brand</code>, <code>category</code> (Shirt/Jeans/Shoes/Dress/Jacket), <code>price</code> (int), <code>sizes_available</code> (list of str e.g. [\'S\',\'M\',\'L\']), <code>in_stock</code> (bool). Build <code>GET /products</code> returning all products, <code>total</code>, and <code>in_stock_count</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">3</div>\n            <div class="pq-content"><p>Build <code>GET /products/{product_id}</code>. Return the product or an error. Test both.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">4</div>\n            <div class="pq-content"><p>Create <code>orders = []</code> and <code>order_counter = 1</code>. Build <code>GET /orders</code> returning all orders, <code>total</code>, and <code>total_revenue</code>.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">5</div>\n            <div class="pq-content"><p>Build <code>GET /products/summary</code> (above <code>/products/{product_id}</code>). Return: total products, in-stock count, out-of-stock count, brands list (unique), and count per category.</p><div class="day-tags"><span class="dtag cd1">Day 1</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-easy">
+            <span class="dsh-label">Easy</span>
+            <span class="dsh-desc">Pydantic models, POST, and helper functions</span>
+            <span class="dsh-count">Q6–10</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">6</div>\n            <div class="pq-content"><p>Create <code>OrderRequest</code>: <code>customer_name</code> (min 2), <code>product_id</code> (gt 0), <code>size</code> (str, min 1), <code>quantity</code> (gt 0, le 10), <code>delivery_address</code> (min 10), <code>gift_wrap</code> (bool, default False). Test: send quantity=0 and confirm rejection.</p><div class="day-tags"><span class="dtag cd2">Day 2</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">7</div>\n            <div class="pq-content"><p>Write <code>find_product(product_id)</code> helper. Write <code>calculate_order_total(price, quantity, gift_wrap)</code> — add ₹50 per item if gift_wrap=True. Also apply a 5% bulk discount if quantity >= 5. Show breakdown. Plain functions.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">8</div>\n            <div class="pq-content"><p>Build <code>POST /orders</code>. Check product exists. Check <code>in_stock</code>. Check that the requested <code>size</code> is in <code>sizes_available</code> — if not, return an error listing the available sizes. Use <code>calculate_order_total()</code>. Return order with <code>order_id</code>, product name, brand, size, quantity, gift_wrap, and total.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">9</div>\n            <div class="pq-content"><p>Add a <code>season_sale</code> field (bool, default False) to <code>OrderRequest</code>. Modify <code>calculate_order_total()</code> — if season_sale=True apply 15% off before gift wrap charge and bulk discount. Show all discounts separately in the response.</p><div class="day-tags"><span class="dtag cd2">Day 2</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">10</div>\n            <div class="pq-content"><p>Build <code>GET /products/filter</code> with optional params: <code>category</code> (str), <code>brand</code> (str), <code>max_price</code> (int), <code>in_stock</code> (bool). Use <code>filter_products_logic()</code> helper. All checks use <code>is not None</code>.</p><div class="day-tags"><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-medium">
+            <span class="dsh-label">Medium</span>
+            <span class="dsh-desc">CRUD operations and multi-step workflows</span>
+            <span class="dsh-count">Q11–15</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">11</div>\n            <div class="pq-content"><p>Create <code>NewProduct</code> model: <code>name</code> (min 2), <code>brand</code> (min 2), <code>category</code> (min 2), <code>price</code> (gt 0), <code>sizes_available</code> (list of str), <code>in_stock</code> (default True). Build <code>POST /products</code> — reject if name+brand combo already exists. Return with status 201.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">12</div>\n            <div class="pq-content"><p>Build <code>PUT /products/{product_id}</code> with optional query params <code>price</code> (int) and <code>in_stock</code> (bool). Return 404 if not found. Apply only non-None updates.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">13</div>\n            <div class="pq-content"><p>Build <code>DELETE /products/{product_id}</code>. Return 404 if not found. If the product has any orders in the orders list, return an error — cannot delete a product with order history. Otherwise delete.</p><div class="day-tags"><span class="dtag cd4">Day 4</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">14</div>\n            <div class="pq-content"><p>Build a wishlist. Add <code>wishlist = []</code>. Build <code>POST /wishlist/add</code> (query params: <code>customer_name</code>, <code>product_id</code>, <code>size</code>) — check product exists and size is valid. Don\'t allow the same customer+product+size combo twice. Build <code>GET /wishlist</code> returning wishlist items and total wishlist value.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">15</div>\n            <div class="pq-content"><p>Build <code>DELETE /wishlist/remove</code> (query params: <code>customer_name</code>, <code>product_id</code>). Build <code>POST /wishlist/order-all</code> — request body with <code>customer_name</code>, <code>delivery_address</code>. Loop all wishlist items for that customer, place an order for each, collect confirmations, clear their wishlist entries, return all orders and grand total with status 201.</p><div class="day-tags"><span class="dtag cd5">Day 5</span></div></div>\n          </div>']
+          </div>
+        </div>        <div class="diff-section">
+          <div class="diff-section-hdr dsh-hard">
+            <span class="dsh-label">Hard</span>
+            <span class="dsh-desc">Search, sort, pagination, and combined logic</span>
+            <span class="dsh-count">Q16–20</span>
+          </div>
+          <div class="pq-list">
+['          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">16</div>\n            <div class="pq-content"><p>Build <code>GET /products/search</code> with required param <code>keyword</code> (str). Search across <code>name</code>, <code>brand</code>, AND <code>category</code>, case-insensitive. Return matches and <code>total_found</code>. If no results, return a friendly message.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">17</div>\n            <div class="pq-content"><p>Build <code>GET /products/sort</code> — allow <code>sort_by</code>: <code>price</code>, <code>name</code>, <code>brand</code>, <code>category</code>. Default: sort by <code>price</code> ascending. Validate both params. Return sorted list with sort metadata.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">18</div>\n            <div class="pq-content"><p>Build <code>GET /products/page</code> with <code>page</code> (default 1) and <code>limit</code> (default 3). Full pagination formula with <code>total_pages</code>. Test all pages.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">19</div>\n            <div class="pq-content"><p>Build <code>GET /orders/search</code> — search by <code>customer_name</code>. Build <code>GET /orders/sort</code> — sort by <code>total_cost</code> or <code>quantity</code>. Build <code>GET /orders/page</code> — paginate orders. All above any variable order routes.</p><div class="day-tags"><span class="dtag cd6">Day 6</span></div></div>\n          </div>', '          <div class="pq-item">\n            <div class="pq-num" style="background:linear-gradient(135deg,#ef4444,#f97316)">20</div>\n            <div class="pq-content"><p>Build <code>GET /products/browse</code> combining: optional <code>keyword</code>, <code>category</code> filter, <code>brand</code> filter, <code>in_stock</code> filter, <code>max_price</code> filter, <code>sort_by</code>, <code>order</code>, <code>page</code>, <code>limit</code>. Apply all filters first, then sort, then paginate. Return full metadata and results.</p><div class="day-tags"><span class="dtag cd6">Day 6</span><span class="dtag cd3">Day 3</span></div></div>\n          </div>']
+          </div>
+        </div>
+    </div>
+  </div>
+
+  </div><!-- /projects-grid -->
+
+  <!-- FINAL SUBMISSION -->
+  <div class="submit-final">
+    <h3>✅ Final Submission Checklist</h3>
+    <p>Complete all of these before submitting your project.</p>
+    <div class="submit-list">
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>Project chosen — I am building project #___</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>Q1–Q5 ✅  Beginner — Home route + GET all + GET by ID + summary endpoint all working</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>Q6 ✅  Pydantic model created with all required validations — tested invalid inputs</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>Q7 ✅  Helper functions written as plain Python — no @app decorator on them</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>Q8 ✅  POST main endpoint uses helper functions and returns confirmed record</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>Q9 ✅  Extended Pydantic model with new field — helper updated with new logic</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>Q10 ✅  Filter endpoint using filter_logic() helper — all is not None checks correct</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>Q11 ✅  POST /[items] returns 201 status — duplicate check working</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>Q12 ✅  PUT update endpoint — only non-None fields updated, 404 handled</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>Q13 ✅  DELETE endpoint — 404 handled, business rule check (can't delete if active)</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>Q14 ✅  First workflow endpoint working — route order rule followed</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>Q15 ✅  Full workflow (3+ connected endpoints) working end-to-end</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>Q16 ✅  Search endpoint — case-insensitive, multi-field, friendly no-results message</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>Q17 ✅  Sort endpoint — validated sort_by and order, all combinations tested</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>Q18 ✅  Pagination — total_pages correct, all pages navigated in Swagger</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>Q19 ✅  Search + sort + pagination built for secondary list (orders/records)</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>Q20 ✅  /browse combined endpoint — all params optional, correct order of operations</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>All fixed routes are above variable /{id} routes throughout the entire file</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>No duplicate route names or function names anywhere in main.py</span></div>
+      <div class="submit-item" onclick="toggleCheck(this)"><div class="s-box">✓</div><span>main.py submitted + Swagger screenshots for all 20 questions</span></div>
+    </div>
+  </div>
+
+  <div class="footer">Built for <strong>FastAPI Internship Training</strong> · Final Project — 10 Projects · 20 Questions Each · Days 1–6 · Good luck! 🚀</div>
+
+</div><!-- /page -->
+
+<script>
+let selectedProject = null;
+
+function selectProject(n) {
+  if (selectedProject) {
+    const prev = document.getElementById('proj-' + selectedProject);
+    if (prev) prev.classList.remove('selected');
+  }
+  selectedProject = n;
+  const card = document.getElementById('proj-' + n);
+  if (card) {
+    card.classList.add('selected');
+    if (!card.classList.contains('open')) toggleProject(n);
+  }
+}
+
+function toggleProject(n) {
+  const card = document.getElementById('proj-' + n);
+  const isOpen = card.classList.contains('open');
+  document.querySelectorAll('.proj-card').forEach(c => c.classList.remove('open'));
+  if (!isOpen) card.classList.add('open');
+}
+
+function toggleCheck(item) {
+  item.classList.toggle('checked');
+  item.querySelector('.s-box').textContent = item.classList.contains('checked') ? '✓' : '';
+}
+</script>
+</body>
+</html>
