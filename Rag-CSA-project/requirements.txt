@@ -1,0 +1,16 @@
+# Core RAG stack
+langchain>=0.2.0
+langgraph>=0.1.0
+chromadb>=0.5.0
+pdfplumber>=0.11.0
+
+# Embeddings & LLM (HuggingFace offline path)
+sentence-transformers>=3.0.0
+transformers>=4.40.0
+torch>=2.2.0
+
+# OpenAI (optional — only needed when EMBEDDING_PROVIDER=openai)
+openai>=1.30.0
+
+# Utilities
+python-dotenv>=1.0.0

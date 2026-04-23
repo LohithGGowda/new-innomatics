@@ -1,0 +1,163 @@
+﻿RAG INTERNSHIP PROJECT
+Design & Build a RAG-Based Customer Support Assistant (with LangGraph & HITL)
+1. Project Objective
+Design and implement a Retrieval-Augmented Generation (RAG) system that:
+* Processes a PDF knowledge base
+* Retrieves relevant information using embeddings
+* Answers user queries contextually
+* Uses a graph-based workflow for control logic
+* Routes responses based on intent
+* Supports Human-in-the-Loop (HITL) escalation
+This project emphasizes system design thinking + applied implementation.
+2. Mandatory Concepts to Be Applied
+1. What is RAG
+2. Load a PDF → Chunk → Store embeddings in ChromaDB
+3. Query system to retrieve answers from document
+4. Graph-based workflow using LangGraph
+5. 2-node flow: Input → Process → Output
+6. Conditional routing based on intent
+7. Customer Support Bot use case
+8. Human-in-the-Loop (HITL) escalation
+3. Deliverable 1: High-Level Design (HLD)
+Objective
+Define the overall system architecture.
+What your HLD must include:
+1. System Overview
+* Problem definition
+* Scope of the system
+2. Architecture Diagram (Mandatory)
+* User interface (CLI / Web)
+* Document ingestion pipeline
+* Embedding system
+* Vector database
+* Retrieval layer
+* LLM processing layer
+* Workflow orchestration (LangGraph)
+* HITL system
+3. Component Description
+* Document Loader
+* Chunking Strategy
+* Embedding Model
+* Vector Store
+* Retriever
+* LLM
+* Graph Workflow Engine
+* Routing Layer
+* HITL Module
+4. Data Flow
+* How data moves from PDF → Answer
+* Query lifecycle
+5. Technology Choices
+* Why ChromaDB
+* Why LangGraph
+* LLM choice
+* Any additional tools
+6. Scalability Considerations
+* Handling large documents
+* Increasing query load
+* Latency concerns
+4. Deliverable 2: Low-Level Design (LLD)
+Objective
+Define how the system will be implemented internally.
+What your LLD must include:
+1. Module-Level Design
+* Document Processing Module
+* Chunking Module
+* Embedding Module
+* Vector Storage Module
+* Retrieval Module
+* Query Processing Module
+* Graph Execution Module
+* HITL Module
+2. Data Structures
+* Document representation
+* Chunk format
+* Embedding structure
+* Query-response schema
+* State object for graph
+3. Workflow Design (LangGraph)
+* Nodes: Processing Node, Output Node
+* Edges: Flow between nodes
+* State: Data flowing between nodes
+4. Conditional Routing Logic
+* Answer generation criteria
+* Escalation criteria
+* Low confidence
+* Missing context
+* Complex query
+5. HITL Design
+* When escalation is triggered
+* What happens after escalation
+* How human response is integrated
+6. API / Interface Design
+* Input format
+* Output format
+* Interaction flow
+7. Error Handling
+* Missing data
+* No relevant chunks found
+* LLM failure
+5. Deliverable 3: Technical Documentation
+Objective
+Provide a complete explanation of your system as if presenting to engineers.
+Your document must include:
+1. Introduction
+* What is RAG
+* Why it is needed
+* Use case overview
+2. System Architecture Explanation
+* Detailed explanation of HLD
+* Component interactions
+3. Design Decisions
+* Chunk size choice
+* Embedding strategy
+* Retrieval approach
+* Prompt design logic
+4. Workflow Explanation
+* LangGraph usage
+* Node responsibilities
+* State transitions
+5. Conditional Logic
+* Intent detection
+* Routing decisions
+6. HITL Implementation
+* Role of human intervention
+* Benefits and limitations
+7. Challenges & Trade-offs
+* Retrieval accuracy vs speed
+* Chunk size vs context quality
+* Cost vs performance
+8. Testing Strategy
+* Testing approach
+* Sample queries
+9. Future Enhancements
+* Multi-document support
+* Feedback loop
+* Memory integration
+* Deployment
+6. Final Submission Requirements
+* HLD Document (PDF)
+* LLD Document (PDF)
+* Technical Documentation (PDF)
+* Working Project (optional but preferred)
+7. Evaluation Criteria
+Criteria
+	Weight
+	HLD Quality
+	20%
+	LLD Depth
+	20%
+	Technical Documentation
+	25%
+	Concept Application
+	20%
+	Clarity & Presentation
+	15%
+	8. Important Instructions
+* Do NOT copy generic architecture from the internet
+* Design must reflect understanding of RAG + workflow systems
+* Focus on clarity, reasoning, and structure
+* Treat this like a real production system design document
+Final Brief to Students
+You are not just building a chatbot.
+You are designing a scalable AI system with decision-making capability.
