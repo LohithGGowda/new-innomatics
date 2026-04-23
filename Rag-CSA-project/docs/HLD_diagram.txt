@@ -1,0 +1,88 @@
+
+╔══════════════════════════════════════════════════════════════════════════════════╗
+║          RAG-BASED CUSTOMER SUPPORT ASSISTANT — HIGH LEVEL DESIGN               ║
+╚══════════════════════════════════════════════════════════════════════════════════╝
+
+ ┌─────────────────────────────────────────────────────────────────────────────┐
+ │                         INGESTION PIPELINE  (one-time)                      │
+ │                                                                             │
+ │   ┌──────────┐    ┌──────────┐    ┌───────────┐    ┌──────────────────┐    │
+ │   │ PDF File │───▶│PDFPlumber│───▶│  Chunker  │───▶│ Embedding Model  │    │
+ │   │          │    │  Loader  │    │ 512 chars │    │ HuggingFace /    │    │
+ │   └──────────┘    └──────────┘    │ 64 overlap│    │ OpenAI           │    │
+ │                                   └───────────┘    └────────┬─────────┘    │
+ │                                                             │               │
+ │                                                             ▼               │
+ │                                                   ┌──────────────────┐      │
+ │                                                   │    ChromaDB      │      │
+ │                                                   │  Vector Store    │      │
+ │                                                   │ (cosine index)   │      │
+ │                                                   └──────────────────┘      │
+ └─────────────────────────────────────────────────────────────────────────────┘
+                                          │
+                                          │  similarity search
+                                          │
+ ┌────────────┐                           ▼
+ │            │              ┌────────────────────────────────────────────────┐
+ │    USER    │──── query ──▶│              LANGGRAPH WORKFLOW                │
+ │   (CLI)    │              │                                                │
+ │            │              │  ┌─────────────┐                              │
+ └────────────┘              │  │  NODE A     │                              │
+        ▲                    │  │  Retriever  │ ◀── ChromaDB top-K chunks    │
+        │                    │  │             │                              │
+        │                    │  └──────┬──────┘                              │
+        │                    │         │ chunks + similarity score            │
+        │                    │         ▼                                      │
+        │                    │  ┌─────────────┐                              │
+        │                    │  │  NODE B     │                              │
+        │                    │  │   Router    │                              │
+        │                    │  │             │                              │
+        │                    │  └──────┬──────┘                              │
+        │                    │         │                                      │
+        │                    │   ┌─────┴──────────────────┐                  │
+        │                    │   │                         │                  │
+        │                    │   ▼                         ▼                  │
+        │                    │  similarity >= 0.70    0.30 <= sim < 0.70      │
+        │                    │  ┌─────────────┐       ┌─────────────┐        │
+        │                    │  │  NODE C     │       │  NODE D     │        │
+        │                    │  │  Generator  │       │    HITL     │        │
+        │                    │  │  (LLM / QA) │       │  Escalation │        │
+        │                    │  └──────┬──────┘       └──────┬──────┘        │
+        │                    │         │                      │               │
+        │                    └─────────┼──────────────────────┼───────────────┘
+        │                             │                      │
+        │                             │                      │
+        │    ┌────────────────────────┘                      │
+        │    │  final_answer                                  │
+        │    ▼                                                ▼
+        │  ┌──────────────────┐                  ┌───────────────────────┐
+        └──│   BOT RESPONSE   │                  │   HUMAN AGENT (CLI)   │
+           │  (automated)     │                  │                       │
+           └──────────────────┘                  │  ⚠ Escalation Notice  │
+                                                 │  User Query shown     │
+                                                 │  Agent types reply    │
+                                                 │  → sent back to user  │
+                                                 └───────────────────────┘
+
+ ┌─────────────────────────────────────────────────────────────────────────────┐
+ │                         ROUTING DECISION TABLE                              │
+ ├─────────────────────────┬───────────────────────┬───────────────────────────┤
+ │  Cosine Similarity      │  Intent               │  Action                   │
+ ├─────────────────────────┼───────────────────────┼───────────────────────────┤
+ │  >= 0.70                │  ANSWER               │  Generator → Bot reply    │
+ │  0.30 – 0.70            │  ESCALATE             │  HITL → Human Agent       │
+ │  < 0.30                 │  OUT OF SCOPE         │  Bot: "I don't know"      │
+ └─────────────────────────┴───────────────────────┴───────────────────────────┘
+
+ ┌─────────────────────────────────────────────────────────────────────────────┐
+ │                         TECHNOLOGY STACK                                    │
+ ├──────────────────────┬──────────────────────────────────────────────────────┤
+ │  PDF Loading         │  PDFPlumber                                          │
+ │  Chunking            │  Sliding window (512 chars, 64 overlap)              │
+ │  Embeddings          │  HuggingFace all-MiniLM-L6-v2  /  OpenAI            │
+ │  Vector Store        │  ChromaDB (persistent, cosine similarity)            │
+ │  Workflow Engine     │  LangGraph StateGraph                                │
+ │  LLM / Answer Gen    │  Extractive QA (sentence-transformers)               │
+ │  HITL                │  CLI blocking input with timeout                     │
+ │  Interface           │  Python CLI  (ingest / chat / query / reset)         │
+ └──────────────────────┴──────────────────────────────────────────────────────┘

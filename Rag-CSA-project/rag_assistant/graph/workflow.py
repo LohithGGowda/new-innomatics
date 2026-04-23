@@ -36,15 +36,19 @@ logger = logging.getLogger(__name__)
 # Routing function (used as conditional edge)
 # ---------------------------------------------------------------------------
 
-def _route_after_router(state: GraphState) -> Literal["generator", "hitl"]:
+def _route_after_router(state: GraphState) -> Literal["generator", "hitl", "out_of_scope"]:
     """
     Determine the next node after the router.
 
-    Returns "generator" if intent is "answer", otherwise "hitl".
+    - "answer"       → generator
+    - "escalate"     → hitl
+    - "out_of_scope" → out_of_scope (returns final_answer directly)
     """
     intent = state.get("intent", "escalate")
     if intent == "answer":
         return "generator"
+    if intent == "out_of_scope":
+        return "out_of_scope"
     return "hitl"
 
 
@@ -72,6 +76,8 @@ def build_graph(vector_store: VectorStore) -> StateGraph:
     graph.add_node("router", router_node)
     graph.add_node("generator", generator_node)
     graph.add_node("hitl", hitl_node)
+    # out_of_scope: passthrough node — final_answer already set by router
+    graph.add_node("out_of_scope", lambda state: state)
 
     # Entry point
     graph.set_entry_point("retriever")
@@ -79,19 +85,21 @@ def build_graph(vector_store: VectorStore) -> StateGraph:
     # Fixed edges
     graph.add_edge("retriever", "router")
 
-    # Conditional edge: router → generator OR hitl
+    # Conditional edge: router → generator | hitl | out_of_scope
     graph.add_conditional_edges(
         "router",
         _route_after_router,
         {
-            "generator": "generator",
-            "hitl": "hitl",
+            "generator":    "generator",
+            "hitl":         "hitl",
+            "out_of_scope": "out_of_scope",
         },
     )
 
     # Terminal edges
-    graph.add_edge("generator", END)
-    graph.add_edge("hitl", END)
+    graph.add_edge("generator",    END)
+    graph.add_edge("hitl",         END)
+    graph.add_edge("out_of_scope", END)
 
     compiled = graph.compile()
     logger.info("LangGraph workflow compiled successfully.")

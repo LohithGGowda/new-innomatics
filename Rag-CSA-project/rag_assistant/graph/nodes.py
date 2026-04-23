@@ -103,13 +103,26 @@ def router_node(state: GraphState) -> Dict[str, Any]:
     """
     Evaluate retrieval confidence and set routing intent.
 
-    Escalation triggers:
-      1. No chunks retrieved (missing context)
-      2. top_similarity < config.similarity_threshold (low confidence)
-      3. A prior error was recorded
+    Three-tier routing:
+    ┌─────────────────────────────────────────────────────────────┐
+    │ similarity >= threshold (0.70)  → ANSWER  (generator)       │
+    │ similarity in [0.30, 0.70)      → ESCALATE (human agent)    │
+    │ similarity < 0.30               → OUT_OF_SCOPE (bot says    │
+    │                                   "I don't know" directly)  │
+    └─────────────────────────────────────────────────────────────┘
+
+    Rationale:
+    - Very low similarity (< 0.30) means the query has nothing to do
+      with the knowledge base (e.g. "what's my name", "capital of France").
+      Escalating these to a human agent is pointless — the bot should
+      politely say it can't help with that topic.
+    - Mid-range similarity (0.30–0.70) means the topic is related but
+      the system isn't confident enough — a real support question that
+      deserves human attention.
+    - High similarity (>= 0.70) means the system can answer directly.
 
     Reads  : top_similarity, retrieved_chunks, error
-    Writes : intent, escalation_reason
+    Writes : intent, escalation_reason, final_answer (for out-of-scope)
     """
     node_name = "router"
     logger.info("[%s] Evaluating routing intent.", node_name)
@@ -122,30 +135,44 @@ def router_node(state: GraphState) -> Dict[str, Any]:
             "node_trace": _append_trace(state, node_name),
         }
 
-    chunks = state.get("retrieved_chunks") or []
+    chunks  = state.get("retrieved_chunks") or []
     top_sim = state.get("top_similarity", 0.0)
 
-    if not chunks:
-        reason = "No relevant documents found in the knowledge base."
-        logger.info("[%s] Escalating — %s", node_name, reason)
+    # ── Tier 3: Completely out of scope ──────────────────────────────────
+    OUT_OF_SCOPE_THRESHOLD = 0.30
+    if not chunks or top_sim < OUT_OF_SCOPE_THRESHOLD:
+        msg = (
+            "I'm sorry, I don't have information about that in my knowledge base. "
+            "I can only help with questions related to our products and services — "
+            "such as returns, shipping, passwords, or warranties. "
+            "Is there anything like that I can help you with?"
+        )
+        logger.info(
+            "[%s] Out-of-scope query (similarity=%.3f) — responding directly.",
+            node_name, top_sim,
+        )
         return {
-            "intent": "escalate",
-            "escalation_reason": reason,
+            "intent": "out_of_scope",
+            "final_answer": msg,
+            "escalation_reason": None,
             "node_trace": _append_trace(state, node_name),
         }
 
+    # ── Tier 2: In-scope but low confidence → escalate to human ─────────
     if top_sim < config.similarity_threshold:
         reason = (
             f"Low retrieval confidence (similarity={top_sim:.3f} < "
-            f"threshold={config.similarity_threshold})."
+            f"threshold={config.similarity_threshold}). "
+            f"Query is related to the KB but needs human review."
         )
-        logger.info("[%s] Escalating — %s", node_name, reason)
+        logger.info("[%s] Escalating to human — %s", node_name, reason)
         return {
             "intent": "escalate",
             "escalation_reason": reason,
             "node_trace": _append_trace(state, node_name),
         }
 
+    # ── Tier 1: High confidence → generate answer ────────────────────────
     logger.info("[%s] Routing to generator (similarity=%.3f).", node_name, top_sim)
     return {
         "intent": "answer",
@@ -250,22 +277,25 @@ def _call_openai(prompt: str) -> str:
 
 def _call_hf_pipeline(prompt: str) -> str:
     """
-    Offline extractive answer generation.
+    Offline extractive answer generation using sentence-transformers.
 
-    Parses the question and context from the structured prompt, then uses
-    sentence-level TF-IDF cosine similarity to find the most relevant
-    sentences from the retrieved context and returns them as the answer.
+    No additional model downloads needed — reuses the all-MiniLM-L6-v2
+    model already installed for embeddings.
 
-    This approach:
-    - Requires zero additional model downloads (uses sentence-transformers
-      which is already installed for embeddings)
-    - Works fully offline
-    - Is deterministic and fast on CPU
-    - Produces grounded, traceable answers
+    Steps:
+    1. Parse the question and context out of the structured prompt.
+    2. Split context into sentences.
+    3. Score each sentence against the question using cosine similarity.
+    4. Return the top-3 most relevant sentences as the answer.
+
+    This is fully compatible with any version of transformers/sentence-transformers
+    and requires zero API keys.
     """
     import re
+    import numpy as np
+    from sentence_transformers import SentenceTransformer, util  # type: ignore
 
-    # ── Parse question and context from the prompt ──────────────────────
+    # ── Parse question and context from the structured prompt ────────────
     question = ""
     context_lines = []
     in_context = False
@@ -280,7 +310,7 @@ def _call_hf_pipeline(prompt: str) -> str:
         elif stripped in ("Answer:", ""):
             continue
         elif in_context and stripped:
-            # Strip the [N] (source: ...) header lines, keep content
+            # Skip the [N] (source: page X, similarity Y) header lines
             if not re.match(r"^\[\d+\]", stripped):
                 context_lines.append(stripped)
 
@@ -289,42 +319,39 @@ def _call_hf_pipeline(prompt: str) -> str:
     if not question or not context:
         return "I'm not sure based on the available information. Please contact a human agent."
 
-    # ── Split context into sentences ─────────────────────────────────────
-    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", context) if len(s.strip()) > 20]
+    # ── Split context into sentences ──────────────────────────────────────
+    sentences = [
+        s.strip()
+        for s in re.split(r"(?<=[.!?])\s+", context)
+        if len(s.strip()) > 15
+    ]
 
     if not sentences:
         return "I'm not sure based on the available information. Please contact a human agent."
 
-    # ── Use sentence-transformers to find most relevant sentences ────────
-    try:
-        from sentence_transformers import SentenceTransformer, util  # type: ignore
-        import numpy as np
-
-        if not hasattr(_call_hf_pipeline, "_st_model"):
-            logger.info("Loading sentence-transformers for extractive QA…")
-            _call_hf_pipeline._st_model = SentenceTransformer(  # type: ignore[attr-defined]
-                "sentence-transformers/all-MiniLM-L6-v2"
-            )
-
-        model = _call_hf_pipeline._st_model  # type: ignore[attr-defined]
-        q_emb = model.encode(question, convert_to_tensor=True)
-        s_embs = model.encode(sentences, convert_to_tensor=True)
-        scores = util.cos_sim(q_emb, s_embs)[0].cpu().numpy()
-
-        # Pick top-3 most relevant sentences, preserve original order
-        top_idx = sorted(np.argsort(scores)[-3:].tolist())
-        answer_sentences = [sentences[i] for i in top_idx if scores[i] > 0.3]
-
-        if not answer_sentences:
-            return "I'm not sure based on the available information. Please contact a human agent."
-
-        return " ".join(answer_sentences)
-
-    except Exception as exc:
-        logger.warning("Extractive QA fallback failed: %s — using top sentence.", exc)
-        return sentences[0] if sentences else (
-            "I'm not sure based on the available information. Please contact a human agent."
+    # ── Score sentences against the question ─────────────────────────────
+    # Reuse the cached embedding model (already loaded for retrieval)
+    if not hasattr(_call_hf_pipeline, "_model"):
+        logger.info("Loading sentence-transformers model for extractive QA…")
+        _call_hf_pipeline._model = SentenceTransformer(  # type: ignore[attr-defined]
+            "sentence-transformers/all-MiniLM-L6-v2"
         )
+
+    model = _call_hf_pipeline._model  # type: ignore[attr-defined]
+    q_emb  = model.encode(question,  convert_to_tensor=True)
+    s_embs = model.encode(sentences, convert_to_tensor=True)
+    scores = util.cos_sim(q_emb, s_embs)[0].cpu().numpy()
+
+    # Pick top-3 most relevant sentences, preserve reading order
+    top_n   = min(3, len(sentences))
+    top_idx = sorted(np.argsort(scores)[-top_n:].tolist())
+    best    = [sentences[i] for i in top_idx if scores[i] > 0.25]
+
+    if not best:
+        return "I'm not sure based on the available information. Please contact a human agent."
+
+    logger.debug("Extractive answer from %d sentences, top score=%.3f", len(sentences), float(scores.max()))
+    return " ".join(best)
 
 
 # ---------------------------------------------------------------------------
